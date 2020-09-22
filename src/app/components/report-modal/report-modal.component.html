@@ -1,0 +1,22 @@
+<div class="modal-header">
+  <h4 class="modal-title pull-left m-0">{{title}}</h4>
+  <button type="button" class="close pull-right" aria-label="Close" (click)="close()">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <form [formGroup]="reportForm">
+    <div class="form-group">
+      <label for="exampleInputEmail1">Report Name</label>
+      <input type="text" class="form-control" formControlName="reportName">
+    </div>
+    <div class="form-group">
+      <label for="exampleInputEmail1">Report Description</label>
+      <input type="text" class="form-control" formControlName="reportDescription">
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-danger" (click)="close()">Cancel</button>
+  <button type="button" [disabled]="!reportForm.valid" class="btn btn-primary" (click)="saveReport()">Ok</button>
+</div>

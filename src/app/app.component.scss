@@ -1,0 +1,81 @@
+@import './../variables.scss';
+
+.main-loader {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  opacity: 0.6;
+  z-index: 5;
+  top: 0;
+
+  .loader {
+    border: 16px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 16px solid blue;
+    border-right: 16px solid green;
+    border-bottom: 16px solid red;
+    border-left: 16px solid pink;
+    width: 120px;
+    height: 120px;
+    position: absolute;
+    left: calc(50% - 60px);
+    top: calc(50% - 60px);
+    transform: translate(-50%, -50%);
+    /* for IE 9 */
+    -ms-transform: translate(-50%, -50%);
+    /* for Safari */
+    -webkit-transform: translate(-50%, -50%);
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+  }
+
+  @-webkit-keyframes spin {
+    0% {
+      -webkit-transform: rotate(0deg);
+    }
+
+    100% {
+      -webkit-transform: rotate(360deg);
+    }
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+
+
+.page-header {
+  height: 75px;
+  display: flex;
+  background: $purple1;
+  align-items: center;
+
+  .title {
+    font-size: 2.5rem;
+    color: $grey3;
+    padding-left: 3rem;
+    font-weight: 200;
+    margin: 0;
+  }
+}
+
+.content-view {
+  padding: 3rem;
+}
+
+.no-permissions {
+  text-align: center;
+  margin: 5rem !important;
+  font-size: 30px;
+  font-weight: 500;
+  color: #7b7b7b;
+}

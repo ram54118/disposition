@@ -1,0 +1,11 @@
+{
+  "result": {
+    "data": {
+      "record_count": 2367
+    }
+  },
+  "status": {
+    "status_code": "200",
+    "status_msg": "Success"
+  }
+}

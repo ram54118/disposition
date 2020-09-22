@@ -1,0 +1,11 @@
+{
+  "result": {
+    "data": {
+      "report_url": "http://africau.edu/images/default/sample.pdf"
+    }
+  },
+  "status": {
+    "status_code": "200",
+    "status_msg": "Success"
+  }
+}

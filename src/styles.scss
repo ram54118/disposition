@@ -1,0 +1,215 @@
+.material-icons {
+  font-family: 'Material Icons' !important;
+}
+
+/* fallback */
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(./assets/fonts/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/*--------------------------------------------------------------------------*/
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  // font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Segoe UI Light", "Segoe UI", Helvetica, Arial, "Lucida Grande", sans-serif;
+}
+
+.center-align {
+  text-align: center;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+@import './variables.scss';
+
+
+/*universal selector*/
+*,
+*::after,
+*::before {
+  margin: 0;
+  padding: 0;
+  box-sizing: inherit;
+}
+
+html {
+  font-size: 62.5%;
+}
+
+body {
+  font-family: Roboto,
+    "Helvetica Neue",
+    sans-serif;
+  font-weight: 400;
+  font-size: 1.6rem;
+  line-height: 1.7;
+  color: $black;
+  box-sizing: border-box;
+}
+
+p {
+  margin: 0 !important;
+}
+
+button:focus,
+input:focus {
+  box-shadow: none !important;
+}
+
+.table {
+  background-color: $white;
+  margin: 0;
+
+  td,
+  th {
+    border: 1px solid $grey1;
+    padding: 1.5rem .75rem;
+
+  }
+
+  thead th {
+    border-bottom: 1px solid $yellow1;
+    background: $grey2;
+    color: $purple;
+    font-weight: normal;
+    padding: 0.75rem;
+    vertical-align: middle;
+  }
+}
+
+h3.heading {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: $blue;
+  text-align: left;
+  width: 100%;
+}
+
+.btn {
+  font-size: 1.4rem;
+}
+
+.modal-title {
+  font-size: 2rem;
+  font-weight: 500;
+  color: $blue;
+}
+
+
+#pagination {
+
+  .pagination-prev .page-link,
+  .pagination-next .page-link {
+    color: #000;
+    font-weight: bold;
+  }
+
+  .page-link {
+    background: none;
+    border: none;
+    color: #007bff;
+    font-size: 14px;
+  }
+
+  .page-item.active .page-link {
+    color: #000;
+  }
+}
+
+button.btn {
+  font-size: 1.4rem;
+  background: #c4c4c4;
+  border: none;
+  color: #000;
+
+  &:active,
+  &:disabled,
+  &:hover {
+    background: #c4c4c4 !important;
+    color: #000 !important;
+  }
+}
+
+.form-control {
+  font-size: 1.2rem;
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}
+
+.modal-content {
+  background: #eaeaea;
+  border-radius: 10px;
+
+  .modal-header {
+    border: none;
+
+    .modal-title {
+      color: black;
+      font-size: 2.4rem;
+      text-align: center;
+      width: 100%;
+    }
+
+    .close {
+      font-size: 2.4rem;
+      font-weight: normal;
+    }
+  }
+
+  .modal-body {
+    border: none;
+
+    .message {
+      text-align: center;
+      margin: 1rem !important;
+    }
+  }
+
+  .modal-footer {
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+}
