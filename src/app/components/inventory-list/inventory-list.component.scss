@@ -44,7 +44,18 @@
          &.active {
            color: #37336c;
            font-weight: 500;
-           background: #e4e4e4;
+
+           &.store {
+             background: #c5c5c5;
+           }
+
+           &.return {
+             background: #b9b9b9;
+           }
+
+           &.destroy {
+             background: #e4e4e4;
+           }
          }
 
          &.return {
@@ -232,8 +243,3 @@
    text-overflow: ellipsis;
    width: 150px;
  }
-
- //  .table-responsive {
- //    height: 300px;
- //    overflow-y: auto;
- //  }

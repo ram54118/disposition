@@ -515,13 +515,14 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         Object.assign(result, this.queryParams);
         this.inventoryService.sendDispositionDetains(result).pipe(
           tap((apiResponse: any) => {
-            this.showInfoModal('Information', [apiResponse.status.status_msg]);
             if (apiResponse.status.status_code === '200') {
               if (headerFlag === 'S') {
                 this.showInfoModal('Information', [apiResponse.status.status_msg]);
               } else {
-                this.openPDF();
+                this.openPDF([apiResponse.status.status_msg]);
               }
+            } else {
+              this.showInfoModal('Information', [apiResponse.status.status_msg]);
             }
           })
         ).subscribe();
@@ -549,44 +550,27 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       messages,
       title
     };
-    const modal = this.modalService.show(InformationModalComponent, {
+    return this.modalService.show(InformationModalComponent, {
       backdrop: 'static',
       keyboard: false,
-      class: 'modal-sm',
+      class: 'modal-sm info-modal',
       initialState
     });
   }
 
-  private openPDF() {
+  private openPDF(messages) {
     this.inventoryService.getPDFUrl(this.queryParams).pipe(
       tap(response => {
         console.log('response', response);
-        if (response.result.data.report_url) {
-          window.open(response.result.data.report_url, '_blank');
-          const el = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
-          el.click();
-        }
+        const modal = this.showInfoModal('Information', messages);
+        modal.content.onClose.subscribe(() => {
+          if (response.result.data.report_url) {
+            window.open(response.result.data.report_url, '_blank');
+            const elem = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
+            elem.click();
+          }
+        });
       })
     ).subscribe();
   }
-
-
-  // private openPdfModal(sucessMsg: string, url: string) {
-  //   const initialState = {
-  //     messages: [sucessMsg],
-  //     title: 'Information',
-  //     pdfUrl: url
-  //   };
-  //   const modal = this.modalService.show(PdfModalComponent, {
-  //     backdrop: 'static',
-  //     keyboard: false,
-  //     class: 'modal-lg',
-  //     initialState
-  //   });
-  //   modal.content.onClose.subscribe((response) => {
-  //     const el = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
-  //     el.click();;
-  //   });
-  // }
-
 }

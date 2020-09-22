@@ -177,7 +177,7 @@ button.btn {
 }
 
 .modal-content {
-  background: #eaeaea;
+  background: #fff;
   border-radius: 10px;
 
   .modal-header {
@@ -193,6 +193,8 @@ button.btn {
     .close {
       font-size: 2.4rem;
       font-weight: normal;
+      opacity: 1;
+      padding: 0 10px;
     }
   }
 
@@ -203,6 +205,20 @@ button.btn {
       text-align: center;
       margin: 1rem !important;
     }
+
+    .form-group {
+      padding: 0 3rem;
+
+      label {
+        display: block;
+        text-align: center;
+      }
+
+      input {
+        border-radius: 1rem;
+        border-color: #000;
+      }
+    }
   }
 
   .modal-footer {
@@ -210,6 +226,25 @@ button.btn {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 0 1.5rem 4rem !important;
   }
 
+}
+
+.modal-open .modal {
+  display: flex !important;
+  align-items: center;
+}
+
+@media (min-width: 576px) {
+
+  .modal-dialog {
+    width: 440px;
+    margin: 1.75rem auto;
+
+    &.info-modal {
+      width: 550px;
+      max-width: 550px;
+    }
+  }
 }
