@@ -1,106 +1,114 @@
-<p class="loading" *ngIf="loadingInBackground">Loading...</p>
-<div [hidden]="!metaData" class="actions-container d-flex justify-content-center">
-  <div class="actions-block d-flex flex-wrap">
-    <div class="store box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'others'}"
-      (click)="showOnlyTableData('STORE')">
-      <p class="type">Store</p>
-      <p class="type">{{storesList.length}}</p>
-    </div>
-    <div class="return box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'return'}"
-      (click)="showOnlyTableData('RETURN')">
-      <p class="type">Return</p>
-      <p class="type">{{returnsList.length}}</p>
-    </div>
-    <div class="destroy box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'destroy'}"
-      (click)="showOnlyTableData('DESTROY')">
-      <p class="type">Destroy</p>
-      <p class="type">{{destroyList.length}}</p>
-    </div>
-  </div>
-
-</div>
-<div [hidden]="!metaData" class="filters d-flex flex-wrap">
-  <div class="filters-group lock-group">
-    <div class="lock d-flex m-0">
-      <mat-icon aria-hidden="false" class="col-icon">
-        lock
-      </mat-icon>
-      <span (click)="changeLockState()">{{lockLable}}</span>
-    </div>
-    <div class="show-rows">
-      <label for="">Show Rows</label>
-      <select class="form-control rows-per-screen" [(ngModel)]="recordsPerScreen" (change)="tableRecordsChanged()">
-        <option *ngFor="let option of recordsPerScreenOptions" [value]="option">{{option}}</option>
-      </select>
-    </div>
-    <div class="show-rows">
-      <label for="sel1">Move To</label>
-      <select class="form-control" [(ngModel)]="selectedDisposition" (ngModelChange)="onDispositionChange()">
-        <option disabled>Select</option>
-        <option *ngFor="let option of dispositionTypes" [value]="option.value">{{option.label}}</option>
-      </select>
-    </div>
-    <div class="show-rows">
-      <label for="sel1">Filter</label>
-      <select class="form-control" [(ngModel)]="selectedColumn">
-        <option *ngFor="let option of columnsList" [value]="option.value">{{option.label}}</option>
-      </select>
-      <input type="text" [disabled]="!selectedColumn" [(ngModel)]="searchValue" class="form-control mx-2" #searchFilter>
+<div id="main-container">
+  <p class="loading" *ngIf="loadingInBackground">Loading...</p>
+  <div [hidden]="!metaData" class="actions-container d-flex justify-content-center">
+    <div class="actions-block d-flex flex-wrap">
+      <div class="store box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'store'}"
+        (click)="showOnlyTableData('store')">
+        <p class="type">Store</p>
+        <p class="type">{{storesList.length}}</p>
+      </div>
+      <div class="return box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'return'}"
+        (click)="showOnlyTableData('return')">
+        <p class="type">Return</p>
+        <p class="type">{{returnsList.length}}</p>
+      </div>
+      <div class="destroy box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'destroy'}"
+        (click)="showOnlyTableData('destroy')">
+        <p class="type">Destroy</p>
+        <p class="type">{{destroyList.length}}</p>
+      </div>
     </div>
 
-    <a class="action-link" (click)="reset()">Reset</a>
-    <a class="action-link" (click)="showAll()">Show All</a>
   </div>
-</div>
-<ng-container *ngIf="metaData">
-  <div class="table-responsive">
-    <table class="table" #inventoryTable>
-      <thead [ngClass]="{'col-locked': lockState===states.UN_LOCK}">
-        <tr>
-          <ng-container *ngFor="let column of columnsList; let i=index">
-            <th *ngIf="column.value === 'check_box'" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
+  <div [hidden]="!metaData" class="filters d-flex flex-wrap">
+    <div class="filters-group lock-group">
+      <div class="lock d-flex m-0">
+        <mat-icon aria-hidden="false" class="col-icon">
+          lock
+        </mat-icon>
+        <span (click)="changeLockState()">{{lockLable}}</span>
+      </div>
+      <div class="show-rows">
+        <label for="">Show Rows</label>
+        <select class="form-control rows-per-screen" [(ngModel)]="recordsPerScreen" (change)="tableRecordsChanged()">
+          <option *ngFor="let option of recordsPerScreenOptions" [value]="option">{{option}}</option>
+        </select>
+      </div>
+      <div class="show-rows">
+        <label for="sel1">Move To</label>
+        <select class="form-control" [(ngModel)]="selectedDisposition" (ngModelChange)="onDispositionChange()">
+          <option disabled>Select</option>
+          <option *ngFor="let option of dispositionTypes" [value]="option.value">{{option.label}}</option>
+        </select>
+      </div>
+      <div class="show-rows">
+        <label for="sel1">Filter</label>
+        <select class="form-control" [(ngModel)]="selectedColumn">
+          <option *ngFor="let option of columnsList" [value]="option.value">{{option.label}}</option>
+        </select>
+        <input type="text" [disabled]="!selectedColumn" [(ngModel)]="searchValue" class="form-control mx-2"
+          #searchFilter>
+      </div>
+
+      <a class="action-link" (click)="reset()">Reset</a>
+      <a class="action-link" (click)="showAll()">Show All</a>
+    </div>
+  </div>
+  <ng-container *ngIf="metaData">
+    <div class="table-responsive">
+      <table class="table" #inventoryTable>
+        <thead [ngClass]="{'col-locked': lockState===states.UN_LOCK}">
+          <tr>
+            <ng-container *ngFor="let column of columnsList; let i=index">
+              <th *ngIf="column.value === 'check_box'" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
           this.isColumnLocked(column.value)}" (click)="sortColumn(column, i)"><input type="checkbox"
-                [(ngModel)]="selectAll" (change)="selectOrUnSelectAll($event)" /></th>
-            <th style="width: 200px" *ngIf="column.value !== 'check_box'" class="clickable" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
+                  [(ngModel)]="selectAll" (change)="selectOrUnSelectAll($event)" /></th>
+              <th style="width: 200px" *ngIf="column.value !== 'check_box'" class="clickable" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
          this.isColumnLocked(column.value)}" (click)="sortColumn(column, i)">
-              <div class="column-name" [title]="column.label"><span class="col-name">{{column.label}}</span>
-                <mat-icon aria-hidden="false" class="col-icon">
-                  {{column.sort === true ? 'keyboard_arrow_up' : column.sort === false ? 'keyboard_arrow_down': ''}}
-                </mat-icon>
-              </div>
-            </th>
-          </ng-container>
-        </tr>
-      </thead>
-      <tbody [ngClass]="{'col-locked': lockState===states.UN_LOCK}">
-        <tr *ngFor="let inventory of inventoryList">
-          <ng-container *ngFor="let column of columnsList; let i=index">
-            <td *ngIf="!column.label; else showLabel"
-              [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked('check_box')}"><input
-                type="checkbox" [(ngModel)]="inventory.isSelect" (change)="selectInventory(inventory)" /></td>
-            <ng-template #showLabel>
-              <td [title]="inventory[column.value]"
+                <div class="column-name" [title]="column.label"><span class="col-name">{{column.label}}</span>
+                  <mat-icon aria-hidden="false" class="col-icon">
+                    {{column.sort === true ? 'keyboard_arrow_up' : column.sort === false ? 'keyboard_arrow_down': ''}}
+                  </mat-icon>
+                </div>
+              </th>
+            </ng-container>
+          </tr>
+        </thead>
+        <tbody [ngClass]="{'col-locked': lockState===states.UN_LOCK}">
+          <tr *ngFor="let inventory of inventoryList">
+            <ng-container *ngFor="let column of columnsList; let i=index">
+              <td *ngIf="!column.label"
+                [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked('check_box')}"><input
+                  type="checkbox" [(ngModel)]="inventory.isSelect" (change)="selectInventory(inventory)" /></td>
+              <td *ngIf="column.label && column.value" [title]=" inventory[column.value]"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked(column.value)}">
                 <div class="col-value">{{inventory[column.value]}}</div>
               </td>
-            </ng-template>
-          </ng-container>
-        </tr>
-        <tr data-no-results-found *ngIf="inventoryList && !inventoryList.length">
-          <td colspan="12" class="no-records-found">NO RESULTS FOUND</td>
-        </tr>
-      </tbody>
-    </table>
+              <td *ngIf="column.value"
+                [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked(column.value)}">
+                <div class="col-value">
+                  {{inventory['DISPOSITION_STATUS_ID'] === 2 ? 'Return' : inventory['DISPOSITION_STATUS_ID'] === 3 ? 'Destroy' :'Store' }}
+                </div>
+              </td>
+            </ng-container>
+          </tr>
+          <tr data-no-results-found *ngIf="inventoryList && !inventoryList.length">
+            <td colspan="12" class="no-records-found">NO RESULTS FOUND</td>
+          </tr>
+        </tbody>
+      </table>
 
-  </div>
-  <div class="pagination">
-    <pagination id="pagination" [boundaryLinks]="true" [itemsPerPage]="recordsPerScreen"
-      (pageChanged)="pageChanged($event)" [totalItems]="totalPaginationRecords" previousText="&lsaquo;"
-      nextText="&rsaquo;" firstText="&laquo;" lastText="&raquo;" [maxSize]="5"></pagination>
-  </div>
-  <div class="action-buttons">
-    <button class="btn btn-primary l-btn mr-2" type="button" (click)="getReportDetails('S')">Save Disposition</button>
-    <button *ngIf="showCompleteBtn" class="btn btn-primary l-btn" type="button"
-      (click)="getReportDetails('C')">Complete Disposition</button>
-  </div>
-</ng-container>
+    </div>
+    <div class="pagination">
+      <pagination id="pagination" [boundaryLinks]="true" [itemsPerPage]="recordsPerScreen"
+        (pageChanged)="pageChanged($event)" [totalItems]="totalPaginationRecords" previousText="&lsaquo;"
+        nextText="&rsaquo;" firstText="&laquo;" lastText="&raquo;" [maxSize]="5"></pagination>
+    </div>
+    <div class="action-buttons">
+      <button class="btn btn-primary l-btn mr-2" type="button" (click)="getReportDetails('S')">Save Disposition</button>
+      <button *ngIf="showCompleteBtn" class="btn btn-primary l-btn" type="button"
+        (click)="getReportDetails('C')">Complete
+        Disposition</button>
+    </div>
+  </ng-container>
+</div>

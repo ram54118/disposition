@@ -1,5 +1,5 @@
 import { InformationModalComponent } from './../information-modal/information-modal.component';
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { Subject, forkJoin, Observable, fromEvent } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map, takeUntil, tap, throttleTime, switchMap, filter } from 'rxjs/operators';
@@ -13,6 +13,7 @@ enum LockStates {
   LOCK_ACTIVATED = 'LOCK_ACTIVATED',
   UN_LOCK = 'UN_LOCK'
 }
+const mainDomOccupiedHeight = 360;
 @Component({
   selector: 'app-inventory-list',
   templateUrl: './inventory-list.component.html',
@@ -49,10 +50,22 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   totalPaginationRecords: number;
   maxList = 1000;
   queryParams;
+  mainElement: HTMLElement;
+  previousHeight: number;
   @ViewChild('searchFilter', { static: false }) searchFilter;
   @ViewChild('inventoryTable', { static: false }) public inventoryTable: any;
-  constructor(private inventoryService: InventoryService, private modalService: BsModalService, private activatedRoute: ActivatedRoute) { }
+  constructor(private ngZone: NgZone, private inventoryService: InventoryService, private modalService: BsModalService, private activatedRoute: ActivatedRoute) { }
   ngOnInit() {
+    this.ngZone.runOutsideAngular(() => {
+      window.setInterval(() => {
+        const iFrame: any = parent.document.querySelector('#my-frame');
+        const containerHeight = document.querySelector('#main-container').clientHeight;
+        if (iFrame && containerHeight !== this.previousHeight) {
+          this.previousHeight = containerHeight;
+          iFrame.style.height = containerHeight + mainDomOccupiedHeight + 'px';
+        }
+      }, 50);
+    });
     this.activatedRoute.queryParams.pipe(
       tap(params => {
         if (!(params.USER_ID && params.REPORT_ID && params.DISPOSITION_HEADER_TOKEN)) {
@@ -87,6 +100,10 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       {
         value: 'check_box',
         label: ''
+      },
+      {
+        value: '',
+        label: 'Type'
       },
       {
         label: 'Client',
@@ -400,9 +417,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       if ((this.returnsList.length > 0 || this.destroyList.length > 0)) {
         this.showCompleteBtn = true;
       }
-      // setTimeout(() => {
-      //   this.selectedDisposition = null;
-      // });
+      if (this.selectedInventoryType) {
+        this.showOnlyTableData(this.selectedInventoryType);
+      }
     }
   }
 
@@ -413,15 +430,15 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   showOnlyTableData(type: string) {
     console.log(type)
     switch (type) {
-      case ('STORE'):
-        this.selectedInventoryType = 'others';
+      case ('store'):
+        this.selectedInventoryType = 'store';
         this.paginationRecords = [...this.storesList];
         break;
-      case ('RETURN'):
+      case ('return'):
         this.selectedInventoryType = 'return';
         this.paginationRecords = [...this.returnsList];
         break;
-      case ('DESTROY'):
+      case ('destroy'):
         this.selectedInventoryType = 'destroy';
         this.paginationRecords = [...this.destroyList];
         break;
@@ -538,11 +555,11 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       disposition_details_id: destroyVal.DISPOSITION_DETAIL_ID, type: 'destroy', disposition_details_status_id: 3
     }));
 
-    const othersList = this.storesList.filter(inv => inv.isNewlyAdded).map(destroyVal => ({
+    const storeList = this.storesList.filter(inv => inv.isNewlyAdded).map(destroyVal => ({
       disposition_details_id: destroyVal.DISPOSITION_DETAIL_ID, type: 'store', disposition_details_status_id: 1
     }));
 
-    return [...returnsList, ...destroyList, ...othersList];
+    return [...returnsList, ...destroyList, ...storeList];
   }
 
   private showInfoModal(title, messages) {
