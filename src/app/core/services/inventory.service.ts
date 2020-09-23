@@ -13,10 +13,18 @@ export class InventoryService {
     const userId = metaData.USER_ID;
     const reportId = metaData.REPORT_ID;
     const token = metaData.DISPOSITION_HEADER_TOKEN;
-    const url = `getInventoryDispositionDetails/get?user_id=${userId}&report_id=${reportId}&disposition_header_token=${token}&minrow=${minRow}&maxrow=${maxRow}`;
-    return this.serverProxyService.get(url).pipe(catchError((error) => {
-      return of([]);
-    }));
+    if (token == "null") {
+      const url = `getInventoryDispositionDetails/get?user_id=${userId}&report_id=${reportId}&minrow=${minRow}&maxrow=${maxRow}`;
+      return this.serverProxyService.get(url).pipe(catchError((error) => {
+        return of([]);
+      }));
+    }
+    else {
+      const url = `getInventoryDispositionDetails/get?user_id=${userId}&report_id=${reportId}&disposition_header_token=${token}&minrow=${minRow}&maxrow=${maxRow}`;
+      return this.serverProxyService.get(url).pipe(catchError((error) => {
+        return of([]);
+      }));
+    }  
   }
 
   sendDispositionDetains(result) {
@@ -30,10 +38,20 @@ export class InventoryService {
     const userId = metaData.USER_ID;
     const reportId = metaData.REPORT_ID;
     const token = metaData.DISPOSITION_HEADER_TOKEN;
-    const url = `InventoryDispositionRecordCount/get?user_id=${userId}&report_id=${reportId}&disposition_header_token=${token}`;
-    return this.serverProxyService.get(url).pipe(catchError((error) => {
-      return of(null);
-    }));
+    if (token == "null") {
+      const url = `InventoryDispositionRecordCount/get?user_id=${userId}&report_id=${reportId}`;
+      return this.serverProxyService.get(url).pipe(catchError((error) => {
+        return of(null);
+      }));
+    }
+    else{
+      const disposition_query = `&disposition_header_token=${token}`
+      const url = `InventoryDispositionRecordCount/get?user_id=${userId}&report_id=${reportId}${disposition_query}`;
+      return this.serverProxyService.get(url).pipe(catchError((error) => {
+        return of(null);
+      }));
+    }
+   
   }
 
   getPDFUrl(metaData): Observable<any> {

@@ -24,6 +24,7 @@ export class InformationModalComponent implements OnInit {
 
   close() {
     this.bsModalRef.hide();
+    this.onClose.next();
   }
 
 

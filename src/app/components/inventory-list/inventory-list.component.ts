@@ -411,6 +411,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   showOnlyTableData(type: string) {
+    console.log(type)
     switch (type) {
       case ('STORE'):
         this.selectedInventoryType = 'others';
@@ -511,7 +512,6 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
             disposition_details_item: this.getDispositionList()
           }]
         };
-        console.log(JSON.stringify(result));
         Object.assign(result, this.queryParams);
         this.inventoryService.sendDispositionDetains(result).pipe(
           tap((apiResponse: any) => {
@@ -553,7 +553,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     return this.modalService.show(InformationModalComponent, {
       backdrop: 'static',
       keyboard: false,
-      class: 'modal-sm info-modal',
+      class: 'modal-md info-modal',
       initialState
     });
   }
@@ -561,11 +561,10 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   private openPDF(messages) {
     this.inventoryService.getPDFUrl(this.queryParams).pipe(
       tap(response => {
-        console.log('response', response);
-        const modal = this.showInfoModal('Information', messages);
+        window.open(response.result.data.report_url, '_blank');
+        const modal = this.showInfoModal('Disposition Report', ['Your disposition report has been generated:', 'Acces the report from the Reporting dashboard. Please print, review and sign, then provide to yout Project Manager for further processing.']);
         modal.content.onClose.subscribe(() => {
           if (response.result.data.report_url) {
-            window.open(response.result.data.report_url, '_blank');
             const elem = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
             elem.click();
           }
@@ -574,3 +573,4 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     ).subscribe();
   }
 }
+

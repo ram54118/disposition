@@ -42,22 +42,20 @@
          border-radius: 6px;
 
          &.active {
-           color: #37336c;
+           color: #fff;
            font-weight: 500;
-
-           &.store {
-             background: #c5c5c5;
+             &.store {
+             background: #1e8ae7;
            }
 
            &.return {
-             background: #b9b9b9;
+             background: #5c4495;
            }
 
            &.destroy {
-             background: #e4e4e4;
+             background: #ee3134;
            }
-         }
-
+          }
          &.return {
            margin: 0 5rem;
          }
@@ -243,3 +241,8 @@
    text-overflow: ellipsis;
    width: 150px;
  }
+
+ //  .table-responsive {
+ //    height: 300px;
+ //    overflow-y: auto;
+ //  }
