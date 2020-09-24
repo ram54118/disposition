@@ -102,43 +102,52 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.columnsList = [
       {
         value: 'check_box',
-        label: '',
+        label: ''
       },
       {
-        value: '',
-        label: 'Type'
+        value: 'DISPOSITION_STATUS_ID',
+        label: 'Type',
+        type: 'number'
       },
       {
         label: 'Client',
         value: 'CLIENT_NAME',
+        type: 'string'
       },
       {
         label: 'Protocol',
-        value: 'PROTOCOL'
+        value: 'PROTOCOL',
+        type: 'string'
       },
       {
         label: 'Facility',
         value: 'FACILITY_NAME',
+        type: 'string'
       },
       {
         label: 'Part ID',
         value: 'COMPONENT_CODE',
+        type: 'string'
       },
       {
         label: 'Client Part ID',
         value: 'CLIENT_PRODUCT_ID',
+        type: 'number'
       },
       {
         label: 'Description (unblinded)',
         value: 'COMPONENT_DESCRIPTION',
+        type: 'string'
       },
       {
         label: 'Lot ID (Manufacturer)',
         value: 'MANUFACTURERS_LOT_NUMBER',
+        type: 'number'
       },
       {
         label: 'Lot ID (Client)',
         value: 'CLIENT_LOT_NUMBER',
+        type: 'number'
       },
       {
         label: 'Expiry Date',
@@ -158,35 +167,43 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       {
         label: 'Client Container ID',
         value: 'CLIENT_CONTAINER_NUMBER',
+        type: 'number'
       },
       {
         label: 'Lot Status',
         value: 'BATCH_STATUS',
+        type: 'string'
       },
       {
         label: 'Box Status',
         value: 'INVENTORY_STATUS',
+        type: 'string'
       },
       {
         label: 'Quantity',
-        value: 'QUANTITY'
+        value: 'QUANTITY',
+        type: 'number'
       },
 
       {
         label: 'Unit of Measure',
         value: 'UOM',
+        type: 'number'
       },
       {
         label: 'Sample Type',
-        value: 'SAMPLE_TYPE'
+        value: 'SAMPLE_TYPE',
+        type: 'string'
       },
       {
         label: 'Warehouse',
-        value: 'WAREHOUSE_NAME'
+        value: 'WAREHOUSE_NAME',
+        type: 'string'
       },
       {
         label: 'Location',
-        value: 'STORAGE_LOCATION'
+        value: 'STORAGE_LOCATION',
+        type: 'string'
       },
     ];
 
@@ -495,32 +512,32 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       switch (column.type) {
         case ('number'):
           if (column.sort) {
-            this.inventoryList = this.inventoryList.sort((a, b) => Number(b[column.value]) - Number(a[column.value]));
+            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value] && a[column.value] && Number(b[column.value]) - Number(a[column.value]));
           } else {
-            this.inventoryList = this.inventoryList.sort((a, b) => Number(a[column.value]) - Number(b[column.value]));
+            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value] && a[column.value] && Number(a[column.value]) - Number(b[column.value]));
           }
           break;
         case ('string'):
           if (column.sort) {
-            this.inventoryList = this.inventoryList.sort((a, b) => a[column.value].localeCompare(b[column.value]));
+            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value] && a[column.value] && a[column.value].localeCompare(b[column.value]));
           } else {
-            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value].localeCompare(a[column.value]));
+            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value] && a[column.value] && b[column.value].localeCompare(a[column.value]));
           }
           break;
         case ('date'):
           if (column.sort) {
             this.inventoryList = this.inventoryList.sort((a, b) =>
-              new Date(b[column.value]).valueOf() - new Date(a[column.value]).valueOf());
+              b[column.value] && a[column.value] && new Date(b[column.value]).valueOf() - new Date(a[column.value]).valueOf());
           } else {
             this.inventoryList = this.inventoryList.sort((a, b) =>
-              new Date(a[column.value]).valueOf() - new Date(b[column.value]).valueOf());
+              b[column.value] && a[column.value] && new Date(a[column.value]).valueOf() - new Date(b[column.value]).valueOf());
           }
           break;
         default:
           if (column.sort) {
-            this.inventoryList = this.inventoryList.sort((a, b) => a[column.value].localeCompare(b[column.value]));
+            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value] && a[column.value] && a[column.value].localeCompare(b[column.value]));
           } else {
-            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value].localeCompare(a[column.value]));
+            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value] && a[column.value] && b[column.value].localeCompare(a[column.value]));
           }
       }
       this.addLeftPsotionstoTable();

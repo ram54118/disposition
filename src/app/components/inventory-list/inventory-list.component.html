@@ -80,14 +80,14 @@
               <td *ngIf="!column.label"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked('check_box')}"><input
                   type="checkbox" [(ngModel)]="inventory.isSelect" (change)="selectInventory(inventory)" /></td>
-              <td *ngIf="column.label && column.value" [title]=" inventory[column.value]"
+              <td *ngIf="column.label && column.label !== 'Type' && column.value" [title]=" inventory[column.value]"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked(column.value)}">
                 <div class="col-value">{{inventory[column.value]}}</div>
               </td>
-              <td *ngIf="column.value"
+              <td *ngIf="column.label === 'Type'"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked(column.value)}">
                 <div class="col-value">
-                  {{inventory['DISPOSITION_STATUS_ID'] === 2 ? 'Return' : inventory['DISPOSITION_STATUS_ID'] === 3 ? 'Destroy' :'Store' }}
+                  {{inventory[column.value] === 2 ? 'Return' : inventory[column.value] === 3 ? 'Destroy' :'Store' }}
                 </div>
               </td>
             </ng-container>
