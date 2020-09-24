@@ -27,7 +27,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   public storesList: Inventory[] = [];
   public returnsList: Inventory[] = [];
   public destroyList: Inventory[] = [];
-  public columnsList: { label: string, value: string, sort?: boolean }[];
+  public columnsList: { label: string, value: string, sort?: boolean, type?: any }[];
   public selectedColumn: string;
   public selectedDisposition: string;
   private subscriptions$ = new Subject<void>();
@@ -56,16 +56,19 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   @ViewChild('inventoryTable', { static: false }) public inventoryTable: any;
   constructor(private ngZone: NgZone, private inventoryService: InventoryService, private modalService: BsModalService, private activatedRoute: ActivatedRoute) { }
   ngOnInit() {
-    this.ngZone.runOutsideAngular(() => {
-      window.setInterval(() => {
-        const iFrame: any = parent.document.querySelector('#my-frame');
-        const containerHeight = document.querySelector('#main-container').clientHeight;
-        if (iFrame && containerHeight !== this.previousHeight) {
-          this.previousHeight = containerHeight;
-          iFrame.style.height = containerHeight + mainDomOccupiedHeight + 'px';
-        }
-      }, 50);
-    });
+    // this.ngZone.runOutsideAngular(() => {
+    //   window.setInterval(() => {
+    //     const iFrame: any = parent.document.querySelector('#pt1:r3:0:pgl02348 iframe');
+    //     const containerHeight = document.querySelector('#main-container').clientHeight;
+    //     console.log('iFrame', iFrame);
+    //     if (iFrame && containerHeight !== this.previousHeight) {
+    //       console.log('if condition called');
+    //       console.log('containerHeight', containerHeight);
+    //       this.previousHeight = containerHeight;
+    //       iFrame.style.height = containerHeight + mainDomOccupiedHeight + 'px';
+    //     }
+    //   }, 50);
+    // });
     this.activatedRoute.queryParams.pipe(
       tap(params => {
         if (!(params.USER_ID && params.REPORT_ID && params.DISPOSITION_HEADER_TOKEN)) {
@@ -99,7 +102,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.columnsList = [
       {
         value: 'check_box',
-        label: ''
+        label: '',
       },
       {
         value: '',
@@ -140,14 +143,17 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       {
         label: 'Expiry Date',
         value: 'BATCH_EXPIRATION_DATE',
+        type: 'date'
       },
       {
         label: 'Receipt ID',
         value: 'RECEIPT_CODE',
+        type: 'string'
       },
       {
         label: 'Box ID',
         value: 'BOX_CODE',
+        type: 'number'
       },
       {
         label: 'Client Container ID',
@@ -358,6 +364,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
             const storeIndex = this.storesList.findIndex(inventoryFromList => inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
             if (storeIndex === -1) {
               inventory.isNewlyAdded = true;
+              inventory.DISPOSITION_STATUS_ID = 1;
               this.storesList.push(inventory);
             }
 
@@ -377,6 +384,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
             const returnIndex = this.returnsList.findIndex(inventoryFromList => inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
             if (returnIndex === -1) {
               inventory.isNewlyAdded = true;
+              inventory.DISPOSITION_STATUS_ID = 2;
               this.returnsList.push(inventory);
             }
 
@@ -396,6 +404,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
             const destroyIndex = this.destroyList.findIndex(inventoryFromList => inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
             if (destroyIndex === -1) {
               inventory.isNewlyAdded = true;
+              inventory.DISPOSITION_STATUS_ID = 3;
               this.destroyList.push(inventory);
             }
             const storesIndex = this.storesList.findIndex(inventoryFromList => inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
@@ -482,24 +491,39 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
   sortColumn(column: any, index: number) {
     if (this.lockState !== this.states.LOCK_ACTIVATED) {
-      const isNumber = column.value !== 'last_activity_date' || column.value !== 'client_container_number';
-      if (!column.sort) {
-        column.sort = true;
-        if (isNumber) {
-          this.inventoryList = this.inventoryList.sort((a, b) => Number(b[column.value]) - Number(a[column.value]));
-        } else {
-          this.inventoryList = this.inventoryList.sort((a, b) => a[column.value].localeCompare(b[column.value]));
-        }
-        this.addLeftPsotionstoTable();
-      } else {
-        column.sort = false;
-        if (isNumber) {
-          this.inventoryList = this.inventoryList.sort((a, b) => Number(a[column.value]) - Number(b[column.value]));
-        } else {
-          this.inventoryList = this.inventoryList.sort((a, b) => b[column.value].localeCompare(a[column.value]));
-        }
-        this.addLeftPsotionstoTable();
+      column.sort = column.sort ? false : true;
+      switch (column.type) {
+        case ('number'):
+          if (column.sort) {
+            this.inventoryList = this.inventoryList.sort((a, b) => Number(b[column.value]) - Number(a[column.value]));
+          } else {
+            this.inventoryList = this.inventoryList.sort((a, b) => Number(a[column.value]) - Number(b[column.value]));
+          }
+          break;
+        case ('string'):
+          if (column.sort) {
+            this.inventoryList = this.inventoryList.sort((a, b) => a[column.value].localeCompare(b[column.value]));
+          } else {
+            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value].localeCompare(a[column.value]));
+          }
+          break;
+        case ('date'):
+          if (column.sort) {
+            this.inventoryList = this.inventoryList.sort((a, b) =>
+              new Date(b[column.value]).valueOf() - new Date(a[column.value]).valueOf());
+          } else {
+            this.inventoryList = this.inventoryList.sort((a, b) =>
+              new Date(a[column.value]).valueOf() - new Date(b[column.value]).valueOf());
+          }
+          break;
+        default:
+          if (column.sort) {
+            this.inventoryList = this.inventoryList.sort((a, b) => a[column.value].localeCompare(b[column.value]));
+          } else {
+            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value].localeCompare(a[column.value]));
+          }
       }
+      this.addLeftPsotionstoTable();
     } else {
       this.lockOrUnLockColumn(index);
     }
