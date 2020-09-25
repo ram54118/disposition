@@ -1,14 +1,13 @@
-import { InformationModalComponent } from './../information-modal/information-modal.component';
-import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import { LoaderService } from './../../core/services/loader.service';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
-import { Subject, forkJoin, Observable, fromEvent } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, takeUntil, tap, throttleTime, switchMap, filter } from 'rxjs/operators';
+import { forkJoin, fromEvent, Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, map, switchMap, takeUntil, tap, throttleTime } from 'rxjs/operators';
 import { ReportModalComponent } from '../report-modal/report-modal.component';
 import { InventoryService } from './../../core/services/inventory.service';
 import { Inventory } from './../../models/inventory';
-import { ActivatedRoute } from '@angular/router';
-import { PdfModalComponent } from '../pdf-modal/pdf-modal.component';
-import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
+import { InformationModalComponent } from './../information-modal/information-modal.component';
 
 enum LockStates {
   ACTIVATE_LOCK = 'ACTIVATE_LOCK',
@@ -61,8 +60,10 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   previousHeight: number;
   @ViewChild('searchFilter', { static: false }) searchFilter;
   @ViewChild('inventoryTable', { static: false }) public inventoryTable: any;
-  constructor(private ngZone: NgZone, private inventoryService: InventoryService, private modalService: BsModalService, private activatedRoute: ActivatedRoute) { }
+  constructor(private ngZone: NgZone, private inventoryService: InventoryService,
+    private modalService: BsModalService, private activatedRoute: ActivatedRoute, private loaderService: LoaderService) { }
   ngOnInit() {
+    this.onPageLoad();
     this.ngZone.runOutsideAngular(() => {
       window.setInterval(() => {
         const iFrame: any = parent.document.querySelector('#right-content iframe');
@@ -449,9 +450,15 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       this.inventoryList.forEach(inventory => inventory.isSelect = false);
       this.storesList.forEach(inventory => inventory.isSelect = false);
       this.selectedInventoryList = [];
+      setTimeout(() => {
+        this.selectedDisposition = null;
+      });
+
       this.selectAll = false;
       if ((this.returnsList.length > 0 || this.destroyList.length > 0)) {
         this.showCompleteBtn = true;
+      } else {
+        this.showCompleteBtn = false;
       }
       if (this.selectedInventoryType) {
         this.showOnlyTableData(this.selectedInventoryType);
@@ -518,37 +525,39 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   sortColumn(column: any, index: number) {
     if (this.lockState !== this.states.LOCK_ACTIVATED) {
       column.sort = column.sort ? false : true;
+      let sortingList;
       switch (column.type) {
         case ('number'):
           if (column.sort) {
-            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value] && a[column.value] && Number(b[column.value]) - Number(a[column.value]));
+            sortingList = this.paginationRecords.sort((a, b) => b[column.value] && a[column.value] && Number(b[column.value]) - Number(a[column.value]));
           } else {
-            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value] && a[column.value] && Number(a[column.value]) - Number(b[column.value]));
+            sortingList = this.paginationRecords.sort((a, b) => b[column.value] && a[column.value] && Number(a[column.value]) - Number(b[column.value]));
           }
           break;
         case ('string'):
           if (column.sort) {
-            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value] && a[column.value] && a[column.value].localeCompare(b[column.value]));
+            sortingList = this.paginationRecords.sort((a, b) => b[column.value] && a[column.value] && a[column.value].localeCompare(b[column.value]));
           } else {
-            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value] && a[column.value] && b[column.value].localeCompare(a[column.value]));
+            sortingList = this.paginationRecords.sort((a, b) => b[column.value] && a[column.value] && b[column.value].localeCompare(a[column.value]));
           }
           break;
         case ('date'):
           if (column.sort) {
-            this.inventoryList = this.inventoryList.sort((a, b) =>
+            sortingList = this.paginationRecords.sort((a, b) =>
               b[column.value] && a[column.value] && new Date(b[column.value]).valueOf() - new Date(a[column.value]).valueOf());
           } else {
-            this.inventoryList = this.inventoryList.sort((a, b) =>
+            sortingList = this.paginationRecords.sort((a, b) =>
               b[column.value] && a[column.value] && new Date(a[column.value]).valueOf() - new Date(b[column.value]).valueOf());
           }
           break;
         default:
           if (column.sort) {
-            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value] && a[column.value] && a[column.value].localeCompare(b[column.value]));
+            sortingList = this.paginationRecords.sort((a, b) => b[column.value] && a[column.value] && a[column.value].localeCompare(b[column.value]));
           } else {
-            this.inventoryList = this.inventoryList.sort((a, b) => b[column.value] && a[column.value] && b[column.value].localeCompare(a[column.value]));
+            sortingList = this.paginationRecords.sort((a, b) => b[column.value] && a[column.value] && b[column.value].localeCompare(a[column.value]));
           }
       }
+      this.inventoryList = sortingList.slice(0, this.recordsPerScreen);
       this.addLeftPsotionstoTable();
     } else {
       this.lockOrUnLockColumn(index);
@@ -628,35 +637,19 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   private openPDF(messages) {
     this.inventoryService.getPDFUrl(this.queryParams).pipe(
       tap(response => {
-        window.open(response.result.data.report_url, '_blank');
         const modal = this.showInfoModal('Disposition Report', ['Your disposition report has been generated:', 'Acces the report from the Reporting dashboard. Please print, review and sign, then provide to yout Project Manager for further processing.']);
         modal.content.onClose.subscribe(() => {
           if (response.result.data.report_url) {
-            // const elem = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
-            // elem.click();
+            const elem = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
+            elem.click();
+            window.open(response.result.data.report_url, '_blank');
           }
         });
       })
     ).subscribe();
   }
 
-  private openPdfModal(sucessMsg: string, url: string) {
-    const initialState = {
-      messages: [sucessMsg],
-      title: 'Information',
-      pdfUrl: url
-    };
-    const modal = this.modalService.show(PdfModalComponent, {
-      backdrop: 'static',
-      keyboard: false,
-      class: 'modal-lg',
-      initialState
-    });
-    modal.content.onClose.subscribe((response) => {
-      // const el = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
-      // el.click();;
-    });
-  }
+
 
   public onKeyUpEvent(event: any): void {
     if (event.keyCode === 13) {
@@ -672,8 +665,49 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.startIndex = (this.goToPage - 1) * this.recordsPerScreen;
     this.endIndex = this.startIndex < this.totalPaginationRecords ? Math.min(this.startIndex + this.recordsPerScreen, this.totalPaginationRecords) : this.startIndex + this.recordsPerScreen;
   }
-  discardDisposition(){
-    const el = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
-    el.click();
+
+  discardDisposition() {
+    this.loaderService.show();
+    const element = parent.document.getElementsByClassName('goBackToReport');
+    const firstElement = element[0] as HTMLElement;
+    if (element && firstElement) {
+      firstElement.click();
+    }
+  }
+
+  private onPageLoad() {
+    this.ngZone.runOutsideAngular(() => {
+      // interval to show modal for every 2mins
+      window.setInterval(() => {
+        const element = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
+        this.showInfoModal('complete disposition', ['complete disposition']);
+      }, 120000);
+
+      // interval to change iframe height
+      window.setInterval(() => {
+        const iFrame: any = parent.document.querySelector('#right-content iframe');
+        const containerHeight = document.querySelector('#main-container').clientHeight;
+        if (iFrame && containerHeight !== this.previousHeight) {
+          this.previousHeight = containerHeight;
+          iFrame.style.height = containerHeight + mainDomOccupiedHeight + 'px';
+        }
+      }, 50);
+
+      // interval to click some element
+      window.setInterval(() => {
+        const backToREportElem = parent.document.getElementsByClassName('goBackToReport');
+        if (backToREportElem && backToREportElem[0]) {
+          const elem = backToREportElem[0] as HTMLElement;
+          elem.click();
+        }
+      }, 60000);
+
+      // hiding some parent div element
+      const emptyDiv = parent.document.getElementById('emptyDiv');
+      if (emptyDiv && emptyDiv[0]) {
+        const elem = emptyDiv[0] as HTMLElement;
+        elem.style.cssText = 'display:none; height: 0px';
+      }
+    });
   }
 }

@@ -36,7 +36,8 @@
       </div>
       <div class="show-rows">
         <label for="sel1">Move To</label>
-        <select class="form-control" [(ngModel)]="selectedDisposition" (ngModelChange)="onDispositionChange()">
+        <select class="form-control" [disabled]="!selectedInventoryList.length" [(ngModel)]="selectedDisposition"
+          (ngModelChange)="onDispositionChange()">
           <option disabled>Select</option>
           <option *ngFor="let option of dispositionTypes" [value]="option.value">{{option.label}}</option>
         </select>
@@ -61,8 +62,8 @@
           <tr>
             <ng-container *ngFor="let column of columnsList; let i=index">
               <th *ngIf="column.value === 'check_box'" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
-                this.isColumnLocked(column.value)}" (click)="sortColumn(column, i)"><input type="checkbox"
-                  [(ngModel)]="selectAll" (change)="selectOrUnSelectAll($event)" /></th>
+                this.isColumnLocked(column.value)}"><input type="checkbox" [(ngModel)]="selectAll"
+                  (change)="selectOrUnSelectAll($event)" /></th>
               <th style="width: 200px" *ngIf="column.value !== 'check_box'" class="clickable" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
                 this.isColumnLocked(column.value)}" (click)="sortColumn(column, i)">
                 <div class="column-name" [title]="column.label"><span class="col-name">{{column.label}}</span>
@@ -87,7 +88,7 @@
               <td *ngIf="column.label === 'Type'"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked(column.value)}">
                 <div class="col-value">
-                    {{inventory[column.value] === 2 ? 'Return' : inventory[column.value] === 3 ? 'Destroy' :'Store' }}
+                  {{inventory[column.value] === 2 ? 'Return' : inventory[column.value] === 3 ? 'Destroy' :'Store' }}
                 </div>
               </td>
             </ng-container>
@@ -98,20 +99,22 @@
         </tbody>
       </table>
     </div>
-  <div class="pagination">
-    <div>Page <input type="number" class="panination-page-no-inp" (keyup)="onKeyUpEvent($event)" [(ngModel)]="goToPage" />
-      <span>of {{noOfPages}}({{startIndex + 1}} – {{endIndex}} of {{totalPaginationRecords}} items)</span>
+    <div class="pagination">
+      <div>Page <input type="number" class="panination-page-no-inp" (keyup)="onKeyUpEvent($event)"
+          [(ngModel)]="goToPage" />
+        <span>of {{noOfPages}}({{startIndex + 1}} – {{endIndex}} of {{totalPaginationRecords}} items)</span>
+      </div>
+      <pagination id="pagination" [boundaryLinks]="true" [itemsPerPage]="recordsPerScreen"
+        (pageChanged)="pageChanged($event)" [totalItems]="totalPaginationRecords" previousText="&lsaquo;"
+        nextText="&rsaquo;" [maxSize]="5" [(ngModel)]="currentPage"></pagination>
     </div>
-    <pagination id="pagination" [boundaryLinks]="true" [itemsPerPage]="recordsPerScreen"
-      (pageChanged)="pageChanged($event)" [totalItems]="totalPaginationRecords" previousText="&lsaquo;"
-      nextText="&rsaquo;" [maxSize]="5" [(ngModel)]="currentPage"></pagination>
-  </div>
-  
-  <div class="action-buttons">
-    <button class="btn btn-primary l-btn mr-2" type="button" (click)="discardDisposition()">Discard Disposition</button>
-    <button class="btn btn-primary l-btn mr-2" type="button" (click)="getReportDetails('S')">Save Disposition</button>
-    <button *ngIf="showCompleteBtn" class="btn btn-primary l-btn" type="button"
-      (click)="getReportDetails('C')">Complete Disposition</button>
-  </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary l-btn mr-2" type="button" (click)="discardDisposition()">Discard
+        Disposition</button>
+      <button class="btn btn-primary l-btn mr-2" type="button" (click)="getReportDetails('S')">Save Disposition</button>
+      <button *ngIf="showCompleteBtn" class="btn btn-primary l-btn" type="button"
+        (click)="getReportDetails('C')">Complete Disposition</button>
+    </div>
   </ng-container>
 </div>

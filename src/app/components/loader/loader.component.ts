@@ -11,7 +11,6 @@ export class LoaderComponent implements OnInit {
   color = 'primary';
   mode = 'indeterminate';
   value = 50;
-  isLoading: Subject<number> = this.loaderService.isLoading;
 
   constructor(private loaderService: LoaderService) { }
 

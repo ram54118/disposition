@@ -5,13 +5,12 @@ import { Subject } from 'rxjs';
   providedIn: 'root'
 })
 export class LoaderService {
-  isLoading = new Subject<number>();
-  show(progressCount?: number) {
-    console.log('pro', progressCount);
-    this.isLoading.next(progressCount);
+  isLoading = new Subject<boolean>();
+  show() {
+    this.isLoading.next(true);
   }
   hide() {
-    this.isLoading.next();
+    this.isLoading.next(false);
   }
   constructor() { }
 }
