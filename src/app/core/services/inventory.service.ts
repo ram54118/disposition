@@ -28,6 +28,7 @@ export class InventoryService {
   }
 
   sendDispositionDetains(result) {
+    console.log(result);
     const url = 'InventoryDisposition/set';
     return this.serverProxyService.post(url, result).pipe(catchError((error) => {
       return of([]);

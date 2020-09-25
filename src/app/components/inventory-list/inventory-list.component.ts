@@ -1,5 +1,5 @@
 import { InformationModalComponent } from './../information-modal/information-modal.component';
-import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { Subject, forkJoin, Observable, fromEvent } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map, takeUntil, tap, throttleTime, switchMap, filter } from 'rxjs/operators';
@@ -8,12 +8,14 @@ import { InventoryService } from './../../core/services/inventory.service';
 import { Inventory } from './../../models/inventory';
 import { ActivatedRoute } from '@angular/router';
 import { PdfModalComponent } from '../pdf-modal/pdf-modal.component';
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
+
 enum LockStates {
   ACTIVATE_LOCK = 'ACTIVATE_LOCK',
   LOCK_ACTIVATED = 'LOCK_ACTIVATED',
   UN_LOCK = 'UN_LOCK'
 }
-const mainDomOccupiedHeight = 360;
+const mainDomOccupiedHeight = 150;
 @Component({
   selector: 'app-inventory-list',
   templateUrl: './inventory-list.component.html',
@@ -41,6 +43,11 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   public unLockedColumns: { label: string, value: string, sort?: boolean }[] = [];
   public lockLable = 'Activate lock';
   public lockState: LockStates = LockStates.ACTIVATE_LOCK;
+  public currentPage = 1;
+  public goToPage = 1;
+  public noOfPages = 0;
+  public startIndex = 0;
+  public endIndex = 0;
   showCompleteBtn: boolean;
   bsModalRef: BsModalRef;
   states = LockStates;
@@ -56,19 +63,16 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   @ViewChild('inventoryTable', { static: false }) public inventoryTable: any;
   constructor(private ngZone: NgZone, private inventoryService: InventoryService, private modalService: BsModalService, private activatedRoute: ActivatedRoute) { }
   ngOnInit() {
-    // this.ngZone.runOutsideAngular(() => {
-    //   window.setInterval(() => {
-    //     const iFrame: any = parent.document.querySelector('#pt1:r3:0:pgl02348 iframe');
-    //     const containerHeight = document.querySelector('#main-container').clientHeight;
-    //     console.log('iFrame', iFrame);
-    //     if (iFrame && containerHeight !== this.previousHeight) {
-    //       console.log('if condition called');
-    //       console.log('containerHeight', containerHeight);
-    //       this.previousHeight = containerHeight;
-    //       iFrame.style.height = containerHeight + mainDomOccupiedHeight + 'px';
-    //     }
-    //   }, 50);
-    // });
+    this.ngZone.runOutsideAngular(() => {
+      window.setInterval(() => {
+        const iFrame: any = parent.document.querySelector('#right-content iframe');
+        const containerHeight = document.querySelector('#main-container').clientHeight;
+        if (iFrame && containerHeight !== this.previousHeight) {
+          this.previousHeight = containerHeight;
+          iFrame.style.height = containerHeight + mainDomOccupiedHeight + 'px';
+        }
+      }, 50);
+    });
     this.activatedRoute.queryParams.pipe(
       tap(params => {
         if (!(params.USER_ID && params.REPORT_ID && params.DISPOSITION_HEADER_TOKEN)) {
@@ -249,6 +253,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         this.loadingInBackground = false;
         this.inventoryList = this.totalinventoryList.slice(0, this.recordsPerScreen);
         this.addLeftPsotionstoTable();
+
+        this.goToPage = 1;
+        this.calculatePaginatorPoints();
       })
     );
   }
@@ -298,6 +305,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   tableRecordsChanged() {
     this.inventoryList = this.paginationRecords.slice(0, this.recordsPerScreen);
     this.addLeftPsotionstoTable();
+    this.calculatePaginatorPoints();
   }
 
   ngAfterViewInit() {
@@ -354,6 +362,8 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     } else {
       this.selectAll = false;
     }
+    this.goToPage = selectedPage.page;
+    this.calculatePaginatorPoints();
   }
 
   reset() {
@@ -454,7 +464,6 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   showOnlyTableData(type: string) {
-    console.log(type)
     switch (type) {
       case ('store'):
         this.selectedInventoryType = 'store';
@@ -557,7 +566,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       initialState
     });
     bsModalRef.content.onClose.subscribe((response) => {
-      const reportDetails = this.inventoryList[0];
+      const reportDetails = this.totalinventoryList[0];
       if (response && reportDetails) {
         const result = {
           user_id: reportDetails.REPORT_USER_ID,
@@ -623,12 +632,48 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         const modal = this.showInfoModal('Disposition Report', ['Your disposition report has been generated:', 'Acces the report from the Reporting dashboard. Please print, review and sign, then provide to yout Project Manager for further processing.']);
         modal.content.onClose.subscribe(() => {
           if (response.result.data.report_url) {
-            const elem = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
-            elem.click();
+            // const elem = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
+            // elem.click();
           }
         });
       })
     ).subscribe();
   }
-}
 
+  private openPdfModal(sucessMsg: string, url: string) {
+    const initialState = {
+      messages: [sucessMsg],
+      title: 'Information',
+      pdfUrl: url
+    };
+    const modal = this.modalService.show(PdfModalComponent, {
+      backdrop: 'static',
+      keyboard: false,
+      class: 'modal-lg',
+      initialState
+    });
+    modal.content.onClose.subscribe((response) => {
+      // const el = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
+      // el.click();;
+    });
+  }
+
+  public onKeyUpEvent(event: any): void {
+    if (event.keyCode === 13) {
+      this.goToPage = parseInt(event.target.value);
+      this.currentPage = this.goToPage;
+      this.calculatePaginatorPoints();
+    }
+  }
+
+  private calculatePaginatorPoints() {
+    this.recordsPerScreen = parseInt(this.recordsPerScreen.toString());
+    this.noOfPages = Math.ceil(this.totalPaginationRecords / this.recordsPerScreen);
+    this.startIndex = (this.goToPage - 1) * this.recordsPerScreen;
+    this.endIndex = this.startIndex < this.totalPaginationRecords ? Math.min(this.startIndex + this.recordsPerScreen, this.totalPaginationRecords) : this.startIndex + this.recordsPerScreen;
+  }
+  discardDisposition(){
+    const el = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
+    el.click();
+  }
+}
