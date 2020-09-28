@@ -4,18 +4,18 @@
     <div class="actions-block d-flex flex-wrap">
       <div class="store box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'store'}"
         (click)="showOnlyTableData('store')">
-        <p class="type">Store</p>
-        <p class="type">{{storesList.length}}</p>
+        <p class="type count-type">{{storesList.length}}</p>
+        <p class="type label-type">Store</p>
       </div>
       <div class="return box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'return'}"
         (click)="showOnlyTableData('return')">
-        <p class="type">Return</p>
-        <p class="type">{{returnsList.length}}</p>
+        <p class="type count-type">{{returnsList.length}}</p>
+        <p class="type label-type">Return</p>
       </div>
       <div class="destroy box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'destroy'}"
         (click)="showOnlyTableData('destroy')">
-        <p class="type">Destroy</p>
-        <p class="type">{{destroyList.length}}</p>
+        <p class="type count-type">{{destroyList.length}}</p>
+        <p class="type label-type">Destroy</p>
       </div>
     </div>
 
@@ -57,20 +57,23 @@
   </div>
   <ng-container *ngIf="metaData">
     <div class="table-responsive">
-      <table class="table" #inventoryTable>
+      <table class="table" [ngClass]="{'noselect': pressed}" #inventoryTable>
         <thead [ngClass]="{'col-locked': lockState===states.UN_LOCK}">
           <tr>
             <ng-container *ngFor="let column of columnsList; let i=index">
               <th *ngIf="column.value === 'check_box'" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
                 this.isColumnLocked(column.value)}"><input type="checkbox" [(ngModel)]="selectAll"
                   (change)="selectOrUnSelectAll($event)" /></th>
-              <th style="width: 200px" *ngIf="column.value !== 'check_box'" class="clickable" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
-                this.isColumnLocked(column.value)}" (click)="sortColumn(column, i)">
+              <th *ngIf="column.value !== 'check_box'" class="clickable" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
+                this.isColumnLocked(column.value), 'dragable': pressed}" (click)="sortColumn(column, i, $event)"
+                [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}"
+                (mousedown)="onMouseDown($event, i)">
                 <div class="column-name" [title]="column.label"><span class="col-name">{{column.label}}</span>
                   <mat-icon aria-hidden="false" class="col-icon">
                     {{column.sort === true ? 'keyboard_arrow_up' : column.sort === false ? 'keyboard_arrow_down': ''}}
                   </mat-icon>
                 </div>
+                <span class="ui-column-resizer"></span>
               </th>
             </ng-container>
           </tr>
@@ -82,6 +85,7 @@
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked('check_box')}"><input
                   type="checkbox" [(ngModel)]="inventory.isSelect" (change)="selectInventory(inventory)" /></td>
               <td *ngIf="column.label && column.label !== 'Type' && column.value" [title]=" inventory[column.value]"
+                [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked(column.value)}">
                 <div class="col-value">{{inventory[column.value]}}</div>
               </td>

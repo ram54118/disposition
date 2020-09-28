@@ -68,6 +68,9 @@
      align-items: center;
 
      .actions-block {
+       border: 1px solid #f5b436;
+       padding: 15px;
+       border-radius: 12px;
        .box {
          border: 1px solid #cdcdcd;
          height: 100px;
@@ -79,7 +82,8 @@
          &.active {
            color: #fff;
            font-weight: 500;
-             &.store {
+
+           &.store {
              background: #1e8ae7;
            }
 
@@ -90,7 +94,8 @@
            &.destroy {
              background: #ee3134;
            }
-          }
+         }
+
          &.return {
            margin: 0 5rem;
          }
@@ -156,6 +161,26 @@
      cursor: pointer;
    }
 
+   .dragable {
+     cursor: col-resize;
+   }
+
+   .noselect {
+     -webkit-touch-callout: none;
+     /* iOS Safari */
+     -webkit-user-select: none;
+     /* Safari */
+     -khtml-user-select: none;
+     /* Konqueror HTML */
+     -moz-user-select: none;
+     /* Old versions of Firefox */
+     -ms-user-select: none;
+     /* Internet Explorer/Edge */
+     user-select: none;
+     /* Non-prefixed version, currently  supported by Chrome, Edge, Opera and Firefox */
+     cursor: col-resize;
+   }
+
    .column-name {
      display: flex;
      align-items: center;
@@ -182,6 +207,7 @@
 
    .table-responsive {
      position: relative;
+     border: 1px solid #000;
    }
 
    .filters-group {
@@ -267,8 +293,32 @@
    margin-top: 3rem;
  }
 
-.table thead th  {
- width: 150px;
+ .table {
+   display: grid;
+   width: auto;
+   -webkit-box-flex: 1;
+   flex: 1;
+
+   thead {
+     th {
+       //  width: 150px;
+       position: relative;
+
+       span.ui-column-resizer {
+         display: block;
+         position: absolute;
+         top: 0;
+         right: 0;
+         margin: 0;
+         width: 4px;
+         height: 100%;
+         padding: 0;
+         cursor: col-resize;
+         border: 1px solid transparent;
+         z-index: 15;
+       }
+     }
+   }
  }
 
  .col-value {
@@ -282,3 +332,11 @@
  //    height: 300px;
  //    overflow-y: auto;
  //  }
+
+ .label-type{
+   padding-top: 7px;
+    font-size: 16px;
+ }
+ .count-type{
+   font-size: 28px;
+ }

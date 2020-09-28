@@ -1,5 +1,5 @@
 import { LoaderService } from './../../core/services/loader.service';
-import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, Renderer2 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { forkJoin, fromEvent, Observable, Subject } from 'rxjs';
@@ -8,6 +8,7 @@ import { ReportModalComponent } from '../report-modal/report-modal.component';
 import { InventoryService } from './../../core/services/inventory.service';
 import { Inventory } from './../../models/inventory';
 import { InformationModalComponent } from './../information-modal/information-modal.component';
+import * as $ from 'jquery';// import Jquery here  
 
 enum LockStates {
   ACTIVATE_LOCK = 'ACTIVATE_LOCK',
@@ -58,11 +59,22 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   queryParams;
   mainElement: HTMLElement;
   previousHeight: number;
+  private isModalOpen: boolean;
+  start: any;
+  pressed: boolean;
+  startX: any;
+  startWidth: any;
+  isInitSet: boolean = false;
+  isColumnResized: boolean = false;
+  allTdWidth = [];
+  onMouseDownIndex = -1;
   @ViewChild('searchFilter', { static: false }) searchFilter;
   @ViewChild('inventoryTable', { static: false }) public inventoryTable: any;
   constructor(private ngZone: NgZone, private inventoryService: InventoryService,
-    private modalService: BsModalService, private activatedRoute: ActivatedRoute, private loaderService: LoaderService) { }
+    private modalService: BsModalService, private activatedRoute: ActivatedRoute,
+    public renderer: Renderer2, private loaderService: LoaderService) { }
   ngOnInit() {
+   
     this.onPageLoad();
     this.ngZone.runOutsideAngular(() => {
       window.setInterval(() => {
@@ -498,17 +510,17 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
       if (headers && headers.length > 0) {
         let left = 0;
-        for (let i = 0; i <= headers.length - 1; i++) {
-          const element = headers[i];
-          element.style.left = (left - 1) + 'px';
-          const colName = element.innerText.trim();
+        // for (let i = 0; i <= headers.length - 1; i++) {
+        //   const element = headers[i];
+        //   element.style.left = (left - 1) + 'px';
+        //   const colName = element.innerText.trim();
 
-          for (let j = i; j < data.length; j += headers.length) {
-            const td = data[j];
-            td.style.left = (left - 1) + 'px';
-          }
-          left += headers[i].offsetWidth;
-        }
+        //   for (let j = i; j < data.length; j += headers.length) {
+        //     const td = data[j];
+        //     td.style.left = (left - 1) + 'px';
+        //   }
+        //   left += headers[i].offsetWidth;
+        // }
       }
     }, 100);
   }
@@ -521,46 +533,57 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.subscriptions$.complete();
   }
 
-
-  sortColumn(column: any, index: number) {
+  sortColumn(column: any, index: number, event: any) {
+    if (this.isColumnResized) {
+      this.isColumnResized = false;
+      return;
+    }
     if (this.lockState !== this.states.LOCK_ACTIVATED) {
       column.sort = column.sort ? false : true;
       let sortingList;
       switch (column.type) {
         case ('number'):
           if (column.sort) {
-            sortingList = this.paginationRecords.sort((a, b) => b[column.value] && a[column.value] && Number(b[column.value]) - Number(a[column.value]));
+            sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && Number(b[column.value]) - Number(a[column.value]));
           } else {
-            sortingList = this.paginationRecords.sort((a, b) => b[column.value] && a[column.value] && Number(a[column.value]) - Number(b[column.value]));
+            sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && Number(a[column.value]) - Number(b[column.value]));
           }
           break;
         case ('string'):
           if (column.sort) {
-            sortingList = this.paginationRecords.sort((a, b) => b[column.value] && a[column.value] && a[column.value].localeCompare(b[column.value]));
+            sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && a[column.value].localeCompare(b[column.value]));
           } else {
-            sortingList = this.paginationRecords.sort((a, b) => b[column.value] && a[column.value] && b[column.value].localeCompare(a[column.value]));
+            sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && b[column.value].localeCompare(a[column.value]));
           }
           break;
         case ('date'):
           if (column.sort) {
             sortingList = this.paginationRecords.sort((a, b) =>
-              b[column.value] && a[column.value] && new Date(b[column.value]).valueOf() - new Date(a[column.value]).valueOf());
+              b[column.value] !== null && a[column.value] !== null && new Date(b[column.value]).valueOf() - new Date(a[column.value]).valueOf());
           } else {
             sortingList = this.paginationRecords.sort((a, b) =>
-              b[column.value] && a[column.value] && new Date(a[column.value]).valueOf() - new Date(b[column.value]).valueOf());
+              b[column.value] !== null && a[column.value] !== null && new Date(a[column.value]).valueOf() - new Date(b[column.value]).valueOf());
           }
           break;
         default:
           if (column.sort) {
-            sortingList = this.paginationRecords.sort((a, b) => b[column.value] && a[column.value] && a[column.value].localeCompare(b[column.value]));
+            sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && a[column.value].localeCompare(b[column.value]));
           } else {
-            sortingList = this.paginationRecords.sort((a, b) => b[column.value] && a[column.value] && b[column.value].localeCompare(a[column.value]));
+            sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && b[column.value].localeCompare(a[column.value]));
           }
       }
       this.inventoryList = sortingList.slice(0, this.recordsPerScreen);
       this.addLeftPsotionstoTable();
     } else {
       this.lockOrUnLockColumn(index);
+    }
+
+    const col = this.columnsList[index];
+    const thEle = $('.table tr th:nth-child(' + (index + 1) + ')');
+    const maxWidth = thEle.css('max-width');
+    if (maxWidth && maxWidth != 'none') {
+      const width = parseInt(maxWidth.replace(/[^0-9]/g, ''));
+      col['width'] = width;
     }
   }
 
@@ -638,11 +661,12 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.inventoryService.getPDFUrl(this.queryParams).pipe(
       tap(response => {
         const modal = this.showInfoModal('Disposition Report', ['Your disposition report has been generated:', 'Acces the report from the Reporting dashboard. Please print, review and sign, then provide to yout Project Manager for further processing.']);
+        window.open(response.result.data.report_url, '_blank');
         modal.content.onClose.subscribe(() => {
           if (response.result.data.report_url) {
             const elem = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
             elem.click();
-            window.open(response.result.data.report_url, '_blank');
+            this.loaderService.show();
           }
         });
       })
@@ -679,8 +703,14 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.ngZone.runOutsideAngular(() => {
       // interval to show modal for every 2mins
       window.setInterval(() => {
-        const element = parent.document.getElementsByClassName('goBackToReport')[0] as HTMLElement;
-        this.showInfoModal('complete disposition', ['complete disposition']);
+        if (!this.isModalOpen) {
+          this.isModalOpen = true;
+          const modal = this.showInfoModal('', ['Please save your changes.']);
+          modal.content.onClose.subscribe(() => {
+            this.isModalOpen = false;
+          });
+        }
+
       }, 120000);
 
       // interval to change iframe height
@@ -695,7 +725,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
       // interval to click some element
       window.setInterval(() => {
-        const backToREportElem = parent.document.getElementsByClassName('goBackToReport');
+        const backToREportElem = parent.document.getElementsByClassName('sessionButton');
         if (backToREportElem && backToREportElem[0]) {
           const elem = backToREportElem[0] as HTMLElement;
           elem.click();
@@ -703,11 +733,62 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       }, 60000);
 
       // hiding some parent div element
-      const emptyDiv = parent.document.getElementById('emptyDiv');
+      const emptyDiv = parent.document.getElementById('pt1:breadcrumbTrail');
       if (emptyDiv && emptyDiv[0]) {
         const elem = emptyDiv[0] as HTMLElement;
         elem.style.cssText = 'display:none; height: 0px';
       }
     });
+  }
+
+  // Column Width Adjuster
+  public onMouseDown(event, index) {
+    if (event.target.className === 'ui-column-resizer') {
+      this.pressed = true;
+    }
+    this.start = event.target;
+    this.startX = event.x;
+    this.startWidth = $(this.start).parent().width();
+    this.onMouseDownIndex = index;
+    if (!this.isInitSet && event.target.className === 'ui-column-resizer') {
+      this.initResizableColumns();
+      this.isInitSet = true;
+    }
+  }
+
+  private initResizableColumns() {
+    this.renderer.listen('body', 'mousemove', (event) => {
+      if (this.pressed && this.isThElements($(this.start).parent())) {
+        this.resizeAllColumn(event);
+      }
+    });
+    this.renderer.listen('body', 'mouseup', (event) => {
+      if (this.pressed) {
+        this.pressed = false;
+      }
+    });
+  }
+
+  private resizeAllColumn(event: any) {
+    let width = this.startWidth + (event.x - this.startX + 16);
+    const thEle = $(this.start).parent();
+    thEle.css({ 'min-width': width, 'max-width': width });
+    thEle.find("div.column-name").css({ 'width': width - 8 });
+    let i = $(this.start).parent().index() + 1;
+    $('.table tr td:nth-child(' + i + ')').css({ 'min-width': width, 'max-width': width });
+    $('.table tr td:nth-child(' + i + ')').find("div.col-value").css({ 'width': width - 15 });
+    this.isColumnResized = true;
+    this.columnsList[this.onMouseDownIndex]['width'] = width;
+  }
+
+  private isThElements(arr: any): boolean {
+    for (let i = 0; arr && i < arr.length; i++) {
+      const item = arr[i];
+      const tagName = item.tagName.toString().toLowerCase().trim();
+      if (tagName === 'th') {
+        return true;
+      }
+    }
+    return false;
   }
 }
