@@ -61,13 +61,13 @@
         <thead [ngClass]="{'col-locked': lockState===states.UN_LOCK}">
           <tr>
             <ng-container *ngFor="let column of columnsList; let i=index">
-              <th *ngIf="column.value === 'check_box'" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
+              <th *ngIf="column.value === 'check_box'" class="checkbox-column" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
                 this.isColumnLocked(column.value)}"><input type="checkbox" [(ngModel)]="selectAll"
                   (change)="selectOrUnSelectAll($event)" /></th>
               <th *ngIf="column.value !== 'check_box'" class="clickable" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
                 this.isColumnLocked(column.value), 'dragable': pressed}" (click)="sortColumn(column, i, $event)"
                 [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}"
-                (mousedown)="onMouseDown($event, i)">
+                >
                 <div class="column-name" [title]="column.label"><span class="col-name">{{column.label}}</span>
                   <mat-icon aria-hidden="false" class="col-icon">
                     {{column.sort === true ? 'keyboard_arrow_up' : column.sort === false ? 'keyboard_arrow_down': ''}}
@@ -81,13 +81,16 @@
         <tbody [ngClass]="{'col-locked': lockState===states.UN_LOCK}">
           <tr *ngFor="let inventory of inventoryList">
             <ng-container *ngFor="let column of columnsList; let i=index">
-              <td *ngIf="!column.label"
+              <td *ngIf="!column.label" class="checkbox-column"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked('check_box')}"><input
                   type="checkbox" [(ngModel)]="inventory.isSelect" (change)="selectInventory(inventory)" /></td>
               <td *ngIf="column.label && column.label !== 'Type' && column.value" [title]=" inventory[column.value]"
                 [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked(column.value)}">
-                <div class="col-value">{{inventory[column.value]}}</div>
+                <div class="col-value" *ngIf="column.value !== 'BATCH_EXPIRATION_DATE'; else dateVal">{{inventory[column.value]}}</div>
+                <ng-template #dateVal>
+                  <div class="col-value">{{inventory[column.value] | date:'longDate'}}</div>
+                </ng-template>
               </td>
               <td *ngIf="column.label === 'Type'"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked(column.value)}">

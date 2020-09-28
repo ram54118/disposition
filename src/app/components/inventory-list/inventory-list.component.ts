@@ -124,7 +124,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       {
         value: 'DISPOSITION_STATUS_ID',
         label: 'Type',
-        type: 'number'
+        type: 'string'
       },
       {
         label: 'Client',
@@ -149,7 +149,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       {
         label: 'Client Part ID',
         value: 'CLIENT_PRODUCT_ID',
-        type: 'number'
+        type: 'string'
       },
       {
         label: 'Description (unblinded)',
@@ -159,12 +159,12 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       {
         label: 'Lot ID (Manufacturer)',
         value: 'MANUFACTURERS_LOT_NUMBER',
-        type: 'number'
+        type: 'string'
       },
       {
         label: 'Lot ID (Client)',
         value: 'CLIENT_LOT_NUMBER',
-        type: 'number'
+        type: 'string'
       },
       {
         label: 'Expiry Date',
@@ -179,12 +179,12 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       {
         label: 'Box ID',
         value: 'BOX_CODE',
-        type: 'number'
+        type: 'string'
       },
       {
         label: 'Client Container ID',
         value: 'CLIENT_CONTAINER_NUMBER',
-        type: 'number'
+        type: 'string'
       },
       {
         label: 'Lot Status',
@@ -199,13 +199,13 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       {
         label: 'Quantity',
         value: 'QUANTITY',
-        type: 'number'
+        type: 'string'
       },
 
       {
         label: 'Unit of Measure',
         value: 'UOM',
-        type: 'number'
+        type: 'string'
       },
       {
         label: 'Sample Type',
@@ -510,17 +510,17 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
       if (headers && headers.length > 0) {
         let left = 0;
-        // for (let i = 0; i <= headers.length - 1; i++) {
-        //   const element = headers[i];
-        //   element.style.left = (left - 1) + 'px';
-        //   const colName = element.innerText.trim();
+        for (let i = 0; i <= headers.length - 1; i++) {
+          const element = headers[i];
+          element.style.left = (left - 1) + 'px';
+          const colName = element.innerText.trim();
 
-        //   for (let j = i; j < data.length; j += headers.length) {
-        //     const td = data[j];
-        //     td.style.left = (left - 1) + 'px';
-        //   }
-        //   left += headers[i].offsetWidth;
-        // }
+          for (let j = i; j < data.length; j += headers.length) {
+            const td = data[j];
+            td.style.left = (left - 1) + 'px';
+          }
+          left += headers[i].offsetWidth;
+        }
       }
     }, 100);
   }
@@ -542,18 +542,15 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       column.sort = column.sort ? false : true;
       let sortingList;
       switch (column.type) {
-        case ('number'):
-          if (column.sort) {
-            sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && Number(b[column.value]) - Number(a[column.value]));
-          } else {
-            sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && Number(a[column.value]) - Number(b[column.value]));
-          }
-          break;
         case ('string'):
           if (column.sort) {
-            sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && a[column.value].localeCompare(b[column.value]));
+            sortingList = this.paginationRecords.sort(function (a, b) {
+              return a[column.value] === null ? -1 : b[column.value] === null ? 1 : a[column.value].toString().localeCompare(b[column.value]);
+            });
           } else {
-            sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && b[column.value].localeCompare(a[column.value]));
+            sortingList = this.paginationRecords.sort(function (a, b) {
+              return b[column.value] === null ? -1 : a[column.value] === null ? 1 : b[column.value].toString().localeCompare(a[column.value]);
+            });
           }
           break;
         case ('date'):
