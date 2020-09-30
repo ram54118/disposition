@@ -349,9 +349,11 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   selectInventory(inventory: Inventory) {
     if (inventory.isSelect) {
       this.selectedInventoryList.push(inventory);
+      this.selectAll = this.inventoryList.every(inv => inv.isSelect !== undefined && inv.isSelect === true);
     } else {
       const inventoryIndex = this.selectedInventoryList.findIndex(selectedInventory => selectedInventory.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
       this.selectedInventoryList.splice(inventoryIndex, 1);
+      this.selectAll = false;
     }
   }
 
@@ -386,6 +388,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.selectedDisposition = null;
     this.inventoryList.forEach(inventory => inventory.isSelect = false);
     this.selectedInventoryList = [];
+    this.showOnlyTableData(this.selectedInventoryType);
   }
 
   showAll() {
