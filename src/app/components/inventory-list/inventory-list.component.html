@@ -1,7 +1,11 @@
 <div id="main-container">
+  <p class="page-title" >To Initiate a disposition</p>
   <p class="loading" *ngIf="loadingInBackground">Loading...</p>
   <div [hidden]="!metaData" class="actions-container d-flex justify-content-center">
-    <div class="actions-block d-flex flex-wrap">
+    
+    <div class="actions-block d-flex flex-wrap flex-column">
+      <p class="type label-type dashboard-title">Disposition Action Dashboard</p>
+      <div class="blocks d-flex flex-wrap">
       <div class="store box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'store'}"
         (click)="showOnlyTableData('store')">
         <p class="type count-type">{{storesList.length}}</p>
@@ -16,6 +20,7 @@
         (click)="showOnlyTableData('destroy')">
         <p class="type count-type">{{destroyList.length}}</p>
         <p class="type label-type">Destroy</p>
+      </div>
       </div>
     </div>
 

@@ -123,7 +123,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       },
       {
         value: 'DISPOSITION_STATUS_ID',
-        label: 'Type',
+        label: 'Action',
         type: 'string'
       },
       {
