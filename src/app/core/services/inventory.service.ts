@@ -13,18 +13,10 @@ export class InventoryService {
     const userId = metaData.USER_ID;
     const reportId = metaData.REPORT_ID;
     const token = metaData.DISPOSITION_HEADER_TOKEN;
-    if (token == "null") {
-      const url = `getInventoryDispositionDetails/get?user_id=${userId}&report_id=${reportId}&minrow=${minRow}&maxrow=${maxRow}`;
-      return this.serverProxyService.get(url).pipe(catchError((error) => {
-        return of([]);
-      }));
-    }
-    else {
-      const url = `getInventoryDispositionDetails/get?user_id=${userId}&report_id=${reportId}&disposition_header_token=${token}&minrow=${minRow}&maxrow=${maxRow}`;
-      return this.serverProxyService.get(url).pipe(catchError((error) => {
-        return of([]);
-      }));
-    }  
+    const url = token == "null" ? `getInventoryDispositionDetails/get?user_id=${userId}&report_id=${reportId}&minrow=${minRow}&maxrow=${maxRow}` : `getInventoryDispositionDetails/get?user_id=${userId}&report_id=${reportId}&disposition_header_token=${token}&minrow=${minRow}&maxrow=${maxRow}`;
+    return this.serverProxyService.get(url).pipe(catchError((error) => {
+      return of([]);
+    }));
   }
 
   sendDispositionDetains(result) {
@@ -56,8 +48,8 @@ export class InventoryService {
 
   getPDFUrl(metaData): Observable<any> {
     const reportId = metaData.REPORT_ID;
-    const url = `https://dev.globalpatientgateway.com/fcsosb/v1/InventoryDispositionReportURL/get?report_type_id=10002&report_id=${reportId}`;
-    return this.http.get(url).pipe(catchError((error) => {
+    const url = `InventoryDispositionReportURL/get?report_type_id=10002&report_id=${reportId}`;
+    return this.serverProxyService.get(url).pipe(catchError((error) => {
       return of(null);
     }));
   }

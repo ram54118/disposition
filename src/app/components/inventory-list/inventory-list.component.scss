@@ -301,8 +301,8 @@
 
    thead {
      th {
-         width: 150px;
-      // position: relative;
+       width: 150px;
+       //position: relative;
 
        span.ui-column-resizer {
          display: block;
@@ -340,9 +340,9 @@
  .count-type{
    font-size: 28px;
  }
-td.checkbox-column {
+ td.checkbox-column {
   background: #fff;
 }
 .checkbox-column{
   position: sticky;
-}
+} 

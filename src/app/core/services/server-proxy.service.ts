@@ -7,9 +7,12 @@ import { catchError, retry, map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ServerProxyService {
-  // private baseUrl = 'http://dev-fcsosb.thermofisher.net/DashBoardApp/';
+
+  //https://dev-fcsosb.thermofisher.net/v1/
+  //private baseUrl = 'http://dev-fcsosb.thermofisher.net/v1/';
   // private baseUrl = './../assets/json/';
-  private baseUrl = 'https://dev.globalpatientgateway.com/fcsosb/v1/';
+  //private baseUrl = 'https://dev.globalpatientgateway.com/fcsosb/v1/';
+  private baseUrl = 'https://dev-globalgateway.amer.thermo.com/fcsosb/v1/';
   constructor(private http: HttpClient) { }
 
   get(url) {
