@@ -30,20 +30,10 @@ export class InventoryService {
     const userId = metaData.USER_ID;
     const reportId = metaData.REPORT_ID;
     const token = metaData.DISPOSITION_HEADER_TOKEN;
-    if (token == "null") {
-      const url = `InventoryDispositionRecordCount/get?user_id=${userId}&report_id=${reportId}`;
-      return this.serverProxyService.get(url).pipe(catchError((error) => {
-        return of(null);
-      }));
-    }
-    else{
-      const disposition_query = `&disposition_header_token=${token}`
-      const url = `InventoryDispositionRecordCount/get?user_id=${userId}&report_id=${reportId}${disposition_query}`;
-      return this.serverProxyService.get(url).pipe(catchError((error) => {
-        return of(null);
-      }));
-    }
-   
+    const url = token == "null"  ? `InventoryDispositionRecordCount/get?user_id=${userId}&report_id=${reportId}` : `InventoryDispositionRecordCount/get?user_id=${userId}&report_id=${reportId}&disposition_header_token=${token}`;
+    return this.serverProxyService.get(url).pipe(catchError((error) => {
+      return of(null);
+    }));
   }
 
   getPDFUrl(metaData): Observable<any> {

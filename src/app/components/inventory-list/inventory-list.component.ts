@@ -8,14 +8,14 @@ import { ReportModalComponent } from '../report-modal/report-modal.component';
 import { InventoryService } from './../../core/services/inventory.service';
 import { Inventory } from './../../models/inventory';
 import { InformationModalComponent } from './../information-modal/information-modal.component';
-import * as $ from 'jquery';// import Jquery here  
+import * as $ from 'jquery';// import Jquery here
 
 enum LockStates {
   ACTIVATE_LOCK = 'ACTIVATE_LOCK',
   LOCK_ACTIVATED = 'LOCK_ACTIVATED',
   UN_LOCK = 'UN_LOCK'
 }
-const mainDomOccupiedHeight = 150;
+const mainDomOccupiedHeight = 50;
 @Component({
   selector: 'app-inventory-list',
   templateUrl: './inventory-list.component.html',
@@ -29,7 +29,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   public storesList: Inventory[] = [];
   public returnsList: Inventory[] = [];
   public destroyList: Inventory[] = [];
-  public columnsList: { label: string, value: string, sort?: boolean, type?: any }[];
+  public columnsList: { label: string, value: string, sort?: boolean, type?: any, width?: any }[];
   public selectedColumn: string;
   public selectedDisposition: string;
   private subscriptions$ = new Subject<void>();
@@ -68,13 +68,14 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   isColumnResized: boolean = false;
   allTdWidth = [];
   onMouseDownIndex = -1;
+  bgColorWidth = 0;
   @ViewChild('searchFilter', { static: false }) searchFilter;
   @ViewChild('inventoryTable', { static: false }) public inventoryTable: any;
   constructor(private ngZone: NgZone, private inventoryService: InventoryService,
     private modalService: BsModalService, private activatedRoute: ActivatedRoute,
     public renderer: Renderer2, private loaderService: LoaderService) { }
   ngOnInit() {
-   
+
     this.onPageLoad();
     this.ngZone.runOutsideAngular(() => {
       window.setInterval(() => {
@@ -297,12 +298,11 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         this.lockLable = 'Unlock';
         break;
       case (LockStates.UN_LOCK):
-        this.lockedColumns = [];
         this.lockState = LockStates.ACTIVATE_LOCK;
         this.lockLable = 'Activate lock';
         break;
-
     }
+    this.addLeftPsotionstoTable();
   }
 
   lockOrUnLockColumn(index: number) {
@@ -389,6 +389,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.inventoryList.forEach(inventory => inventory.isSelect = false);
     this.selectedInventoryList = [];
     this.showOnlyTableData(this.selectedInventoryType);
+    this.calculatePaginatorPoints();
   }
 
   showAll() {
@@ -397,6 +398,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.totalPaginationRecords = this.paginationRecords.length;
     this.addLeftPsotionstoTable();
     this.selectedInventoryType = '';
+    this.calculatePaginatorPoints();
   }
 
   act(type: string) {
@@ -483,6 +485,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
   onDispositionChange() {
     this.act(this.selectedDisposition);
+    this.calculatePaginatorPoints();
   }
 
   showOnlyTableData(type: string) {
@@ -503,6 +506,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.totalPaginationRecords = this.paginationRecords.length;
     this.inventoryList = [...this.paginationRecords.slice(0, this.recordsPerScreen)];
     this.addLeftPsotionstoTable();
+    this.calculatePaginatorPoints();
   }
 
   addLeftPsotionstoTable() {
@@ -515,16 +519,24 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         let left = 0;
         for (let i = 0; i <= headers.length - 1; i++) {
           const element = headers[i];
-          element.style.left = (left - 1) + 'px';
-          const colName = element.innerText.trim();
+          let colName = element.innerText.trim().toLowerCase().replace('keyboard_arrow_up', '');
+          colName = colName.replace('keyboard_arrow_down', '');
+          colName = colName.replace('\n', '');
+          if (this.lockedColumns.find(col => col.label && col.label.trim().toLowerCase().includes(colName))) {
+            console.log('colName', colName);
+            element.style.left = this.lockState === LockStates.ACTIVATE_LOCK ? 'auto' : (left - 1) + 'px';
 
-          for (let j = i; j < data.length; j += headers.length) {
-            const td = data[j];
-            td.style.left = (left - 1) + 'px';
+            for (let j = i; j < data.length; j += headers.length) {
+              const td = data[j];
+              td.style.left = this.lockState === LockStates.ACTIVATE_LOCK ? 'auto' : (left - 1) + 'px';
+            }
           }
+
+          // console.log('colName', colName);
           left += headers[i].offsetWidth;
         }
       }
+      this.lockedColumns = this.lockState === LockStates.ACTIVATE_LOCK ? [] : this.lockedColumns;
     }, 100);
   }
 
@@ -678,6 +690,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   public onKeyUpEvent(event: any): void {
     if (event.keyCode === 13) {
       this.goToPage = parseInt(event.target.value);
+      if (this.goToPage > this.noOfPages) {
+        this.goToPage = this.noOfPages;
+      }
       this.currentPage = this.goToPage;
       this.calculatePaginatorPoints();
     }
@@ -705,13 +720,13 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       window.setInterval(() => {
         if (!this.isModalOpen) {
           this.isModalOpen = true;
-          const modal = this.showInfoModal('', ['Please save your changes.']);
+          const modal = this.showInfoModal('Please save your changes.', '');
           modal.content.onClose.subscribe(() => {
             this.isModalOpen = false;
           });
         }
 
-      }, 120000);
+      }, 300000);
 
       // interval to change iframe height
       window.setInterval(() => {
@@ -734,9 +749,8 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
       // hiding some parent div element
       const emptyDiv = parent.document.getElementById('pt1:breadcrumbTrail');
-      if (emptyDiv && emptyDiv[0]) {
-        const elem = emptyDiv[0] as HTMLElement;
-        elem.style.cssText = 'display:none; height: 0px';
+      if (emptyDiv) {
+        emptyDiv.style.cssText = 'display:none; height: 0px';
       }
     });
   }
@@ -765,6 +779,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.renderer.listen('body', 'mouseup', (event) => {
       if (this.pressed) {
         this.pressed = false;
+        if (this.lockState !== LockStates.LOCK_ACTIVATED) {
+          this.addLeftPsotionstoTable();
+        }
       }
     });
   }
@@ -779,6 +796,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     $('.table tr td:nth-child(' + i + ')').find("div.col-value").css({ 'width': width - 15 });
     this.isColumnResized = true;
     this.columnsList[this.onMouseDownIndex]['width'] = width;
+    if (this.lockedColumns.length > 0 && this.lockState !== LockStates.LOCK_ACTIVATED) {
+      this.addLeftPsotionstoTable();
+    }
   }
 
   private isThElements(arr: any): boolean {

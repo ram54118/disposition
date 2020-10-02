@@ -1,31 +1,31 @@
 <div id="main-container">
-  <p class="page-title" >To Initiate a disposition</p>
   <p class="loading" *ngIf="loadingInBackground">Loading...</p>
+  <!-- <p [hidden]="!metaData" class="page-title">To Initiate a disposition report check the <b>ACTION</b> column to make your selections, then choose an action from the <b>Move To</b> dropdown</p> -->
   <div [hidden]="!metaData" class="actions-container d-flex justify-content-center">
-    
     <div class="actions-block d-flex flex-wrap flex-column">
       <p class="type label-type dashboard-title">Disposition Action Dashboard</p>
       <div class="blocks d-flex flex-wrap">
-      <div class="store box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'store'}"
-        (click)="showOnlyTableData('store')">
-        <p class="type count-type">{{storesList.length}}</p>
-        <p class="type label-type">Store</p>
-      </div>
-      <div class="return box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'return'}"
-        (click)="showOnlyTableData('return')">
-        <p class="type count-type">{{returnsList.length}}</p>
-        <p class="type label-type">Return</p>
-      </div>
-      <div class="destroy box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'destroy'}"
-        (click)="showOnlyTableData('destroy')">
-        <p class="type count-type">{{destroyList.length}}</p>
-        <p class="type label-type">Destroy</p>
-      </div>
+        <div class="store box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'store'}"
+          (click)="showOnlyTableData('store')">
+          <p class="type count-type">{{storesList.length}}</p>
+          <p class="type label-type">Store</p>
+        </div>
+        <div class="return box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'return'}"
+          (click)="showOnlyTableData('return')">
+          <p class="type count-type">{{returnsList.length}}</p>
+          <p class="type label-type">Return</p>
+        </div>
+        <div class="destroy box d-flex flex-column clickable"
+          [ngClass]="{'active': selectedInventoryType === 'destroy'}" (click)="showOnlyTableData('destroy')">
+          <p class="type count-type">{{destroyList.length}}</p>
+          <p class="type label-type">Destroy</p>
+        </div>
       </div>
     </div>
-
   </div>
   <div [hidden]="!metaData" class="filters d-flex flex-wrap">
+    <p class="page-title">To Initiate a disposition report check the <b>Action</b> column to make your
+      selections, then choose an action from the <b>Move To</b> dropdown</p>
     <div class="filters-group lock-group">
       <div class="lock d-flex m-0">
         <mat-icon aria-hidden="false" class="col-icon">
@@ -67,10 +67,11 @@
           <tr>
             <ng-container *ngFor="let column of columnsList; let i=index">
               <th *ngIf="column.value === 'check_box'" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
-                this.isColumnLocked(column.value)}" class="checkbox-column"><input type="checkbox" [(ngModel)]="selectAll"
-                  (change)="selectOrUnSelectAll($event)" /></th>
+                this.isColumnLocked(column.value)}" class="checkbox-column"><input type="checkbox"
+                  [(ngModel)]="selectAll" (change)="selectOrUnSelectAll($event)" /></th>
               <th *ngIf="column.value !== 'check_box'" class="clickable" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
                 this.isColumnLocked(column.value), 'dragable': pressed}" (click)="sortColumn(column, i, $event)"
+                (mousedown)="onMouseDown($event, i)"
                 [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}">
                 <div class="column-name" [title]="column.label"><span class="col-name">{{column.label}}</span>
                   <mat-icon aria-hidden="false" class="col-icon">
@@ -88,17 +89,20 @@
               <td *ngIf="!column.label" class="checkbox-column"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked('check_box')}"><input
                   type="checkbox" [(ngModel)]="inventory.isSelect" (change)="selectInventory(inventory)" /></td>
-              <td *ngIf="column.label && column.label !== 'Type' && column.value" [title]=" inventory[column.value]"
+              <td *ngIf="column.label && column.label !== 'Action' && column.value" [title]=" inventory[column.value]"
                 [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked(column.value)}">
-                  <div class="col-value" *ngIf="column.value !== 'BATCH_EXPIRATION_DATE'; else dateVal">{{inventory[column.value]}}</div>
-                  <ng-template #dateVal>
-                    <div class="col-value">{{inventory[column.value] | date:'longDate'}}</div>
-                  </ng-template>
+                <div class="col-value" *ngIf="column.value !== 'BATCH_EXPIRATION_DATE'; else dateVal"
+                [ngStyle]="{'width.px': column.width ? column.width-15: 'auto'}">
+                  {{inventory[column.value]}}</div>
+                <ng-template #dateVal>
+                  <div class="col-value">{{inventory[column.value] | date:'longDate'}}</div>
+                </ng-template>
               </td>
-              <td *ngIf="column.label === 'Type'"
+              <td *ngIf="column.label === 'Action'"
+              [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked(column.value)}">
-                <div class="col-value">
+                <div class="col-value" [ngStyle]="{'width.px': column.width ? column.width-15 : 'auto'}">
                   {{inventory[column.value] === 2 ? 'Return' : inventory[column.value] === 3 ? 'Destroy' :'Store' }}
                 </div>
               </td>
@@ -110,7 +114,7 @@
         </tbody>
       </table>
     </div>
-    <div class="pagination">
+    <div class="pagination" *ngIf="inventoryList && inventoryList.length">
       <div>Page <input type="number" class="panination-page-no-inp" (keyup)="onKeyUpEvent($event)"
           [(ngModel)]="goToPage" />
         <span>of {{noOfPages}}({{startIndex + 1}} – {{endIndex}} of {{totalPaginationRecords}} items)</span>
