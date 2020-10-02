@@ -335,7 +335,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   filterTableFromValue(value: string) {
     if (value) {
       const list = this.paginationRecords.filter(inventory => {
-        return String(inventory[this.selectedColumn]).indexOf(value) >= 0;
+        return String(inventory[this.selectedColumn]).toLowerCase().indexOf(value.toLowerCase()) >= 0;
       });
       this.inventoryList = list.slice(0, this.recordsPerScreen);
       this.totalPaginationRecords = list.length;
