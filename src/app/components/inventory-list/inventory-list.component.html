@@ -70,9 +70,7 @@
                 this.isColumnLocked(column.value)}" class="checkbox-column"><input type="checkbox"
                   [(ngModel)]="selectAll" (change)="selectOrUnSelectAll($event)" /></th>
               <th *ngIf="column.value !== 'check_box'" class="clickable" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
-                this.isColumnLocked(column.value), 'dragable': pressed, 'action-column': column.label === 'Action'}"
-                (click)="sortColumn(column,
-                i, $event)"
+                this.isColumnLocked(column.value), 'dragable': pressed}" (click)="sortColumn(column, i, $event)"
                 (mousedown)="onMouseDown($event, i)"
                 [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}">
                 <div class="column-name" [title]="column.label"><span class="col-name">{{column.label}}</span>
@@ -101,7 +99,7 @@
                   <div class="col-value">{{inventory[column.value] | date:'longDate'}}</div>
                 </ng-template>
               </td>
-              <td *ngIf="column.label === 'Action'" class="action-column"
+              <td *ngIf="column.label === 'Action'"
               [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked(column.value)}">
                 <div class="col-value" [ngStyle]="{'width.px': column.width ? column.width-15 : 'auto'}">

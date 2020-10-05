@@ -372,18 +372,3 @@
 .checkbox-column{
   position: sticky !important;
 } 
-.action-column{
-  position: sticky !important;
-  left: 29px !important;
-  z-index: 3;
-  background: #fff;
-  .col-value{
-    width: 100px;
-  }
-}
-th.action-column{
-  background: #eeeeea;
-  .column-name{
-    width: 100px;
-  }
-}

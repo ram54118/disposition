@@ -672,7 +672,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   private openPDF(messages) {
     this.inventoryService.getPDFUrl(this.queryParams).pipe(
       tap(response => {
-        const modal = this.showInfoModal('Disposition Report', ['Your disposition report has been generated:', 'Acces the report from the Reporting dashboard. Please print, review and sign, then provide to yout Project Manager for further processing.']);
+        const modal = this.showInfoModal('Disposition Report', ['Your disposition report has been generated:', 'Access the report from the Reporting dashboard. Please print, review and sign, then provide to your Project Manager for further processing.']);
         window.open(response.result.data.report_url, '_blank');
         modal.content.onClose.subscribe(() => {
           if (response.result.data.report_url) {
