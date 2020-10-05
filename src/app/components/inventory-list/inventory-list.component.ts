@@ -23,17 +23,10 @@ const mainDomOccupiedHeight = 50;
 })
 export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   public selectedInventoryType: string;
-  public inventoryList: Inventory[];
-  public totalinventoryList: Inventory[];
-  public selectedInventoryList: Inventory[] = [];
-  public storesList: Inventory[] = [];
-  public returnsList: Inventory[] = [];
-  public destroyList: Inventory[] = [];
   public columnsList: { label: string, value: string, sort?: boolean, type?: any, width?: any }[];
   public selectedColumn: string;
   public selectedDisposition: string;
   private subscriptions$ = new Subject<void>();
-  public paginationRecords: Inventory[];
   public selectAll = false;
   public searchValue: string;
   public dispositionTypes;
@@ -51,10 +44,16 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   showCompleteBtn: boolean;
   bsModalRef: BsModalRef;
   states = LockStates;
-  totalRecords: number;
   metaData;
   loadingInBackground: boolean;
-  totalPaginationRecords: number;
+  totalPaginationRecords: number; // total records on table
+  public inventoryList: Inventory[]; // records to show on table view
+  public totalinventoryList: Inventory[]; // total inventory list from API
+  public selectedInventoryList: Inventory[] = []; // selected list by checkbox
+  public storesList: Inventory[] = []; // stores list
+  public returnsList: Inventory[] = []; // returns list
+  public destroyList: Inventory[] = []; // destroy list
+  public paginationRecords: Inventory[]; // records to show on table
   maxList = 1000;
   queryParams;
   mainElement: HTMLElement;
@@ -334,14 +333,16 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
   filterTableFromValue(value: string) {
     if (value) {
-      const list = this.paginationRecords.filter(inventory => {
+      this.getTableDataByType(this.selectedInventoryType);
+      this.paginationRecords = this.paginationRecords.filter(inventory => {
         return String(inventory[this.selectedColumn]).toLowerCase().indexOf(value.toLowerCase()) >= 0;
       });
-      this.inventoryList = list.slice(0, this.recordsPerScreen);
-      this.totalPaginationRecords = list.length;
-    } else {
       this.inventoryList = this.paginationRecords.slice(0, this.recordsPerScreen);
       this.totalPaginationRecords = this.paginationRecords.length;
+    } else {
+      // this.inventoryList = this.paginationRecords.slice(0, this.recordsPerScreen);
+      // this.totalPaginationRecords = this.paginationRecords.length;
+      this.showOnlyTableData(this.selectedInventoryType);
     }
     this.addLeftPsotionstoTable();
   }
@@ -360,11 +361,14 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   selectOrUnSelectAll(event: any) {
     if (event.target.checked) {
       this.inventoryList.forEach(inventory => inventory.isSelect = true);
-      this.selectedInventoryList = [...this.inventoryList];
+      this.selectedInventoryList = [...this.selectedInventoryList, ...this.inventoryList];
 
     } else {
-      this.inventoryList.forEach(inventory => inventory.isSelect = false);
-      this.selectedInventoryList = [];
+      this.inventoryList.forEach(inventory => {
+        inventory.isSelect = false;
+        const selectedInvIndex = this.selectedInventoryList.findIndex(inv => inv.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
+        this.selectedInventoryList.splice(selectedInvIndex, 1);
+      });
     }
   }
 
@@ -386,7 +390,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.selectedColumn = null;
     this.searchValue = null;
     this.selectedDisposition = null;
-    this.inventoryList.forEach(inventory => inventory.isSelect = false);
+    this.paginationRecords.forEach(inventory => inventory.isSelect = false);
     this.selectedInventoryList = [];
     this.showOnlyTableData(this.selectedInventoryType);
     this.calculatePaginatorPoints();
@@ -489,6 +493,15 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   showOnlyTableData(type: string) {
+    this.getTableDataByType(type);
+    this.totalPaginationRecords = this.paginationRecords.length;
+    this.inventoryList = [...this.paginationRecords.slice((this.goToPage - 1) * this.recordsPerScreen,
+      this.goToPage * this.recordsPerScreen)];
+    this.addLeftPsotionstoTable();
+    this.calculatePaginatorPoints();
+  }
+
+  private getTableDataByType(type) {
     switch (type) {
       case ('store'):
         this.selectedInventoryType = 'store';
@@ -502,11 +515,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         this.selectedInventoryType = 'destroy';
         this.paginationRecords = [...this.destroyList];
         break;
+      default:
+        this.showAll();
     }
-    this.totalPaginationRecords = this.paginationRecords.length;
-    this.inventoryList = [...this.paginationRecords.slice(0, this.recordsPerScreen)];
-    this.addLeftPsotionstoTable();
-    this.calculatePaginatorPoints();
   }
 
   addLeftPsotionstoTable() {
@@ -554,38 +565,40 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       return;
     }
     if (this.lockState !== this.states.LOCK_ACTIVATED) {
-      column.sort = column.sort ? false : true;
-      let sortingList;
-      switch (column.type) {
-        case ('string'):
-          if (column.sort) {
-            sortingList = this.paginationRecords.sort(function (a, b) {
-              return a[column.value] === null ? -1 : b[column.value] === null ? 1 : a[column.value].toString().localeCompare(b[column.value]);
-            });
-          } else {
-            sortingList = this.paginationRecords.sort(function (a, b) {
-              return b[column.value] === null ? -1 : a[column.value] === null ? 1 : b[column.value].toString().localeCompare(a[column.value]);
-            });
-          }
-          break;
-        case ('date'):
-          if (column.sort) {
-            sortingList = this.paginationRecords.sort((a, b) =>
-              b[column.value] !== null && a[column.value] !== null && new Date(b[column.value]).valueOf() - new Date(a[column.value]).valueOf());
-          } else {
-            sortingList = this.paginationRecords.sort((a, b) =>
-              b[column.value] !== null && a[column.value] !== null && new Date(a[column.value]).valueOf() - new Date(b[column.value]).valueOf());
-          }
-          break;
-        default:
-          if (column.sort) {
-            sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && a[column.value].localeCompare(b[column.value]));
-          } else {
-            sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && b[column.value].localeCompare(a[column.value]));
-          }
+      if (column.label !== 'Action') {
+        column.sort = column.sort ? false : true;
+        let sortingList;
+        switch (column.type) {
+          case ('string'):
+            if (column.sort) {
+              sortingList = this.paginationRecords.sort(function (a, b) {
+                return a[column.value] === null ? -1 : b[column.value] === null ? 1 : a[column.value].toString().localeCompare(b[column.value]);
+              });
+            } else {
+              sortingList = this.paginationRecords.sort(function (a, b) {
+                return b[column.value] === null ? -1 : a[column.value] === null ? 1 : b[column.value].toString().localeCompare(a[column.value]);
+              });
+            }
+            break;
+          case ('date'):
+            if (column.sort) {
+              sortingList = this.paginationRecords.sort((a, b) =>
+                b[column.value] !== null && a[column.value] !== null && new Date(b[column.value]).valueOf() - new Date(a[column.value]).valueOf());
+            } else {
+              sortingList = this.paginationRecords.sort((a, b) =>
+                b[column.value] !== null && a[column.value] !== null && new Date(a[column.value]).valueOf() - new Date(b[column.value]).valueOf());
+            }
+            break;
+          default:
+            if (column.sort) {
+              sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && a[column.value].localeCompare(b[column.value]));
+            } else {
+              sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && b[column.value].localeCompare(a[column.value]));
+            }
+        }
+        this.inventoryList = sortingList.slice(0, this.recordsPerScreen);
+        this.addLeftPsotionstoTable();
       }
-      this.inventoryList = sortingList.slice(0, this.recordsPerScreen);
-      this.addLeftPsotionstoTable();
     } else {
       this.lockOrUnLockColumn(index);
     }

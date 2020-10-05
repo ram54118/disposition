@@ -15,8 +15,6 @@ import { LoaderComponent } from './components/loader/loader.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CookieService } from 'ngx-cookie-service';
 import { InformationModalComponent } from './components/information-modal/information-modal.component';
-import { PdfModalComponent } from './components/pdf-modal/pdf-modal.component';
-import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 @NgModule({
   declarations: [
@@ -25,7 +23,6 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
     ReportModalComponent,
     LoaderComponent,
     InformationModalComponent,
-    PdfModalComponent
   ],
   imports: [
     BrowserModule,
@@ -38,12 +35,11 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
     ReactiveFormsModule,
     ModalModule.forRoot(),
     MatProgressSpinnerModule,
-    PdfViewerModule
   ],
   providers: [
     CookieService
   ],
-  entryComponents: [ReportModalComponent, InformationModalComponent, PdfModalComponent],
+  entryComponents: [ReportModalComponent, InformationModalComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
