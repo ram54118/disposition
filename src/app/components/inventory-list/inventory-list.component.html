@@ -110,9 +110,7 @@
               </td>
             </ng-container>
           </tr>
-          <tr data-no-results-found *ngIf="inventoryList && !inventoryList.length">
-            <td colspan="12" class="no-records-found">NO RESULTS FOUND</td>
-          </tr>
+          <p *ngIf="inventoryList && !inventoryList.length" class="no-records-found">NO RESULTS FOUND</p>
         </tbody>
       </table>
     </div>
