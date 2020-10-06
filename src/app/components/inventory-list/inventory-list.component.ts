@@ -9,6 +9,7 @@ import { InventoryService } from './../../core/services/inventory.service';
 import { Inventory } from './../../models/inventory';
 import { InformationModalComponent } from './../information-modal/information-modal.component';
 import * as $ from 'jquery';// import Jquery here
+import { cloneDeep } from 'lodash';
 
 enum LockStates {
   ACTIVATE_LOCK = 'ACTIVATE_LOCK',
@@ -53,6 +54,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   public storesList: Inventory[] = []; // stores list
   public returnsList: Inventory[] = []; // returns list
   public destroyList: Inventory[] = []; // destroy list
+  public storesListCopy: Inventory[] = []; // stores list
+  public returnsListCopy: Inventory[] = []; // returns list
+  public destroyListCopy: Inventory[] = []; // destroy list
   public paginationRecords: Inventory[]; // records to show on table
   maxList = 1000;
   queryParams;
@@ -260,9 +264,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       map((response: any) => response.map(r => r.result.data.getDispositionDetOutput)),
       tap(response => {
         const remainIngList = response.flat(1);
-        this.totalinventoryList = [...remainIngList];
-        this.paginationRecords = [...this.totalinventoryList];
-        this.getCategories();
+        this.totalinventoryList = cloneDeep(remainIngList);
+        this.paginationRecords = cloneDeep(this.totalinventoryList);
+        this.getCategories(true);
         this.loadingInBackground = false;
         this.inventoryList = this.totalinventoryList.slice(0, this.recordsPerScreen);
         this.addLeftPsotionstoTable();
@@ -274,10 +278,15 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     );
   }
 
-  getCategories() {
-    this.storesList = this.totalinventoryList.filter(inv => !(inv.DISPOSITION_STATUS_ID === 2 || inv.DISPOSITION_STATUS_ID === 3));
-    this.returnsList = this.totalinventoryList.filter(inv => inv.DISPOSITION_STATUS_ID === 2);
-    this.destroyList = this.totalinventoryList.filter(inv => inv.DISPOSITION_STATUS_ID === 3);
+  getCategories(isOnload?: boolean) {
+    this.storesList = cloneDeep(this.totalinventoryList.filter(inv => !(inv.DISPOSITION_STATUS_ID === 2 || inv.DISPOSITION_STATUS_ID === 3)));
+    this.returnsList = cloneDeep(this.totalinventoryList.filter(inv => inv.DISPOSITION_STATUS_ID === 2));
+    this.destroyList = cloneDeep(this.totalinventoryList.filter(inv => inv.DISPOSITION_STATUS_ID === 3));
+    if (isOnload) {
+      this.storesListCopy = cloneDeep(this.storesList);
+      this.returnsListCopy = cloneDeep(this.returnsList);
+      this.destroyListCopy = cloneDeep(this.destroyList);
+    }
     if ((this.returnsList.length > 0 || this.destroyList.length > 0)) {
       this.showCompleteBtn = true;
     }
@@ -374,8 +383,8 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   public pageChanged(selectedPage) {
-    this.inventoryList = [...this.paginationRecords.slice((selectedPage.page - 1) * this.recordsPerScreen,
-      selectedPage.page * this.recordsPerScreen)];
+    this.inventoryList = cloneDeep(this.paginationRecords.slice((selectedPage.page - 1) * this.recordsPerScreen,
+      selectedPage.page * this.recordsPerScreen));
     this.addLeftPsotionstoTable();
     if (this.inventoryList && this.inventoryList.length) {
       this.selectAll = this.inventoryList.every(inv => inv.isSelect !== undefined && inv.isSelect === true);
@@ -387,6 +396,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   reset() {
+    this.storesList = cloneDeep(this.storesListCopy);
+    this.returnsList = cloneDeep(this.returnsListCopy);
+    this.destroyList = cloneDeep(this.destroyListCopy);
     this.recordsPerScreen = 5;
     this.lockState = LockStates.UN_LOCK;
     this.changeLockState();
@@ -409,12 +421,35 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     if (event) {
       this.resetFilters();
     }
-    this.inventoryList = [...this.totalinventoryList.slice(0, this.recordsPerScreen)];
-    this.paginationRecords = [...this.totalinventoryList];
+    this.inventoryList = cloneDeep(this.totalinventoryList.slice(0, this.recordsPerScreen));
+    this.paginationRecords = cloneDeep(this.totalinventoryList);
     this.totalPaginationRecords = this.paginationRecords.length;
     this.addLeftPsotionstoTable();
     this.selectedInventoryType = '';
     this.calculatePaginatorPoints();
+  }
+
+  moveDisposition(data, targetList, soruceList1, sourceList2, dispositionStatusId) {
+    const inventory = cloneDeep(data);
+    const targetIndex = targetList.findIndex(inventoryFromList =>
+      inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
+    if (targetIndex === -1) {
+      inventory.isNewlyAdded = true;
+      inventory.DISPOSITION_STATUS_ID = dispositionStatusId;
+      targetList.push(inventory);
+    }
+
+    const returnIndex = soruceList1.findIndex(inventoryFromList =>
+      inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
+    if (returnIndex >= 0) {
+      soruceList1.splice(returnIndex, 1);
+    }
+
+    const destroyIndex = sourceList2.findIndex(inventoryFromList =>
+      inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
+    if (destroyIndex >= 0) {
+      sourceList2.splice(destroyIndex, 1);
+    }
   }
 
   act(type: string) {
@@ -422,61 +457,17 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       switch (type) {
         case ('allOthers'):
           this.selectedInventoryList.forEach(inventory => {
-            const storeIndex = this.storesList.findIndex(inventoryFromList => inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
-            if (storeIndex === -1) {
-              inventory.isNewlyAdded = true;
-              inventory.DISPOSITION_STATUS_ID = 1;
-              this.storesList.push(inventory);
-            }
-
-            const returnIndex = this.returnsList.findIndex(inventoryFromList => inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
-            if (returnIndex >= 0) {
-              this.returnsList.splice(returnIndex, 1);
-            }
-
-            const destroyIndex = this.destroyList.findIndex(inventoryFromList => inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
-            if (destroyIndex >= 0) {
-              this.destroyList.splice(destroyIndex, 1);
-            }
+            this.moveDisposition(inventory, this.storesList, this.returnsList, this.destroyList, 1);
           });
           break;
         case ('return'):
           this.selectedInventoryList.forEach(inventory => {
-            const returnIndex = this.returnsList.findIndex(inventoryFromList => inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
-            if (returnIndex === -1) {
-              inventory.isNewlyAdded = true;
-              inventory.DISPOSITION_STATUS_ID = 2;
-              this.returnsList.push(inventory);
-            }
-
-            const storesIndex = this.storesList.findIndex(inventoryFromList => inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
-            if (storesIndex >= 0) {
-              this.storesList.splice(storesIndex, 1);
-            }
-
-            const destroyIndex = this.destroyList.findIndex(inventoryFromList => inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
-            if (destroyIndex >= 0) {
-              this.destroyList.splice(destroyIndex, 1);
-            }
+            this.moveDisposition(inventory, this.returnsList, this.storesList, this.destroyList, 2);
           });
           break;
         case ('destroy'):
           this.selectedInventoryList.forEach(inventory => {
-            const destroyIndex = this.destroyList.findIndex(inventoryFromList => inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
-            if (destroyIndex === -1) {
-              inventory.isNewlyAdded = true;
-              inventory.DISPOSITION_STATUS_ID = 3;
-              this.destroyList.push(inventory);
-            }
-            const storesIndex = this.storesList.findIndex(inventoryFromList => inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
-            if (storesIndex >= 0) {
-              this.storesList.splice(storesIndex, 1);
-            }
-
-            const retunsIndex = this.returnsList.findIndex(inventoryFromList => inventoryFromList.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
-            if (retunsIndex >= 0) {
-              this.returnsList.splice(retunsIndex, 1);
-            }
+            this.moveDisposition(inventory, this.destroyList, this.storesList, this.returnsList, 3);
           });
           break;
       }
@@ -507,8 +498,8 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   showOnlyTableData(type: string) {
     this.getTableDataByType(type);
     this.totalPaginationRecords = this.paginationRecords.length;
-    this.inventoryList = [...this.paginationRecords.slice((this.goToPage - 1) * this.recordsPerScreen,
-      this.goToPage * this.recordsPerScreen)];
+    this.inventoryList = cloneDeep(this.paginationRecords.slice((this.goToPage - 1) * this.recordsPerScreen,
+      this.goToPage * this.recordsPerScreen));
     this.addLeftPsotionstoTable();
     this.calculatePaginatorPoints();
   }
@@ -517,15 +508,15 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     switch (type) {
       case ('store'):
         this.selectedInventoryType = 'store';
-        this.paginationRecords = [...this.storesList];
+        this.paginationRecords = cloneDeep(this.storesList);
         break;
       case ('return'):
         this.selectedInventoryType = 'return';
-        this.paginationRecords = [...this.returnsList];
+        this.paginationRecords = cloneDeep(this.returnsList);
         break;
       case ('destroy'):
         this.selectedInventoryType = 'destroy';
-        this.paginationRecords = [...this.destroyList];
+        this.paginationRecords = cloneDeep(this.destroyList);
         break;
       default:
         this.showAll();
@@ -654,6 +645,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
             if (apiResponse.status.status_code === '200') {
               if (headerFlag === 'S') {
                 this.showInfoModal('Information', [apiResponse.status.status_msg]);
+                this.storesListCopy = cloneDeep(this.storesList);
+                this.returnsListCopy = cloneDeep(this.returnsList);
+                this.destroyListCopy = cloneDeep(this.destroyList);
               } else {
                 this.openPDF([apiResponse.status.status_msg]);
               }
