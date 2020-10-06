@@ -51,7 +51,7 @@
         <label for="sel1">Filter</label>
         <select class="form-control" [(ngModel)]="selectedColumn">
           <ng-container *ngFor="let option of columnsList">
-            <option *ngIf="option.label" [value]="option.value">{{option.label}}</option>
+            <option *ngIf="option.label && option.label !== 'Action'" [value]="option.value">{{option.label}}</option>
           </ng-container>
         </select>
         <input type="text" [disabled]="!selectedColumn" [(ngModel)]="searchValue" class="form-control mx-2"
@@ -59,7 +59,7 @@
       </div>
 
       <a class="action-link" (click)="reset()">Reset</a>
-      <a class="action-link" (click)="showAll()">Show All</a>
+      <a class="action-link" (click)="showAll($event)">Show All</a>
     </div>
   </div>
   <ng-container *ngIf="metaData">

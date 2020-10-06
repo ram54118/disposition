@@ -269,6 +269,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
         this.goToPage = 1;
         this.calculatePaginatorPoints();
+        this.plsSaveYourChanges();
       })
     );
   }
@@ -326,7 +327,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         takeUntil(this.subscriptions$),
         map(event => event.target.value),
         debounceTime(400),
-        distinctUntilChanged(),
+        // distinctUntilChanged(),
         tap(val => this.filterTableFromValue(val))
       ).subscribe();
   }
@@ -386,17 +387,28 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   reset() {
+    this.recordsPerScreen = 5;
+    this.lockState = LockStates.UN_LOCK;
+    this.changeLockState();
     this.getCategories();
-    this.selectedColumn = null;
-    this.searchValue = null;
-    this.selectedDisposition = null;
     this.paginationRecords.forEach(inventory => inventory.isSelect = false);
     this.selectedInventoryList = [];
     this.showOnlyTableData(this.selectedInventoryType);
     this.calculatePaginatorPoints();
+    this.resetFilters();
   }
 
-  showAll() {
+  resetFilters() {
+    this.selectedColumn = null;
+    this.searchValue = null;
+    this.selectedDisposition = null;
+    this.columnsList.forEach(col => delete col.sort);
+  }
+
+  showAll(event?) {
+    if (event) {
+      this.resetFilters();
+    }
     this.inventoryList = [...this.totalinventoryList.slice(0, this.recordsPerScreen)];
     this.paginationRecords = [...this.totalinventoryList];
     this.totalPaginationRecords = this.paginationRecords.length;
@@ -726,8 +738,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       firstElement.click();
     }
   }
-
-  private onPageLoad() {
+  private plsSaveYourChanges() {
     this.ngZone.runOutsideAngular(() => {
       // interval to show modal for every 2mins
       window.setInterval(() => {
@@ -740,7 +751,10 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         }
 
       }, 300000);
-
+    });
+  }
+  private onPageLoad() {
+    this.ngZone.runOutsideAngular(() => {
       // interval to change iframe height
       window.setInterval(() => {
         const iFrame: any = parent.document.querySelector('#right-content iframe');
