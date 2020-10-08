@@ -268,7 +268,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         this.paginationRecords = cloneDeep(this.totalinventoryList);
         this.getCategories(true);
         this.loadingInBackground = false;
-        this.inventoryList = this.totalinventoryList.slice(0, this.recordsPerScreen);
+        this.inventoryList = cloneDeep(this.totalinventoryList.slice(0, this.recordsPerScreen));
         this.addLeftPsotionstoTable();
 
         this.goToPage = 1;
@@ -350,8 +350,6 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       this.inventoryList = this.paginationRecords.slice(0, this.recordsPerScreen);
       this.totalPaginationRecords = this.paginationRecords.length;
     } else {
-      // this.inventoryList = this.paginationRecords.slice(0, this.recordsPerScreen);
-      // this.totalPaginationRecords = this.paginationRecords.length;
       this.showOnlyTableData(this.selectedInventoryType);
     }
     this.addLeftPsotionstoTable();
@@ -366,11 +364,17 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       this.selectedInventoryList.splice(inventoryIndex, 1);
       this.selectAll = false;
     }
+    const paginationRecord = this.paginationRecords.find(inv => inv.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
+    paginationRecord.isSelect = inventory.isSelect;
   }
 
   selectOrUnSelectAll(event: any) {
     if (event.target.checked) {
-      this.inventoryList.forEach(inventory => inventory.isSelect = true);
+      this.inventoryList.forEach(inventory => {
+        inventory.isSelect = true;
+        const paginationRecord = this.paginationRecords.find(inv => inv.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
+        paginationRecord.isSelect = inventory.isSelect;
+      });
       this.selectedInventoryList = [...this.selectedInventoryList, ...this.inventoryList];
 
     } else {
@@ -378,6 +382,8 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         inventory.isSelect = false;
         const selectedInvIndex = this.selectedInventoryList.findIndex(inv => inv.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
         this.selectedInventoryList.splice(selectedInvIndex, 1);
+        const paginationRecord = this.paginationRecords.find(inv => inv.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
+        paginationRecord.isSelect = inventory.isSelect;
       });
     }
   }
@@ -408,6 +414,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.showOnlyTableData(this.selectedInventoryType);
     this.calculatePaginatorPoints();
     this.resetFilters();
+    this.selectAll = false;
   }
 
   resetFilters() {
@@ -450,6 +457,13 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     if (destroyIndex >= 0) {
       sourceList2.splice(destroyIndex, 1);
     }
+
+    const invOnTable = this.inventoryList.find(inv => inv.DISPOSITION_DETAIL_ID === data.DISPOSITION_DETAIL_ID);
+    if (invOnTable) {
+      invOnTable.DISPOSITION_STATUS_ID = dispositionStatusId;
+    }
+    const paginationRecord = this.paginationRecords.find(inv => inv.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
+    paginationRecord.DISPOSITION_STATUS_ID = dispositionStatusId;
   }
 
   act(type: string) {
@@ -473,6 +487,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       }
       this.inventoryList.forEach(inventory => inventory.isSelect = false);
       this.storesList.forEach(inventory => inventory.isSelect = false);
+      this.paginationRecords.forEach(inv => inv.isSelect = false);
       this.selectedInventoryList = [];
       setTimeout(() => {
         this.selectedDisposition = null;
@@ -495,13 +510,16 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.calculatePaginatorPoints();
   }
 
-  showOnlyTableData(type: string) {
+  showOnlyTableData(type: string, clearFilters?: boolean) {
     this.getTableDataByType(type);
     this.totalPaginationRecords = this.paginationRecords.length;
     this.inventoryList = cloneDeep(this.paginationRecords.slice((this.goToPage - 1) * this.recordsPerScreen,
       this.goToPage * this.recordsPerScreen));
     this.addLeftPsotionstoTable();
     this.calculatePaginatorPoints();
+    if (clearFilters) {
+      this.resetFilters();
+    }
   }
 
   private getTableDataByType(type) {
@@ -648,6 +666,8 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
                 this.storesListCopy = cloneDeep(this.storesList);
                 this.returnsListCopy = cloneDeep(this.returnsList);
                 this.destroyListCopy = cloneDeep(this.destroyList);
+                this.totalinventoryList = [...cloneDeep(this.storesList), ...cloneDeep(this.returnsList), ...cloneDeep(this.destroyList)];
+                this.getTableDataByType(this.selectedInventoryType);
               } else {
                 this.openPDF([apiResponse.status.status_msg]);
               }

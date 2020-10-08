@@ -1,29 +1,28 @@
 <div id="main-container">
   <p class="loading" *ngIf="loadingInBackground">Loading...</p>
-  <!-- <p [hidden]="!metaData" class="page-title">To Initiate a disposition report check the <b>ACTION</b> column to make your selections, then choose an action from the <b>Move To</b> dropdown</p> -->
-  <div [hidden]="!metaData" class="actions-container d-flex justify-content-center">
+  <div [hidden]="loadingInBackground" class="actions-container d-flex justify-content-center">
     <div class="actions-block d-flex flex-wrap flex-column">
       <p class="type label-type dashboard-title">Disposition Action Dashboard</p>
       <div class="blocks d-flex flex-wrap">
         <div class="store box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'store'}"
-          (click)="showOnlyTableData('store')">
+          (click)="showOnlyTableData('store', true)">
           <p class="type count-type">{{storesList.length}}</p>
           <p class="type label-type">Store</p>
         </div>
         <div class="return box d-flex flex-column clickable" [ngClass]="{'active': selectedInventoryType === 'return'}"
-          (click)="showOnlyTableData('return')">
+          (click)="showOnlyTableData('return', true)">
           <p class="type count-type">{{returnsList.length}}</p>
           <p class="type label-type">Return</p>
         </div>
         <div class="destroy box d-flex flex-column clickable"
-          [ngClass]="{'active': selectedInventoryType === 'destroy'}" (click)="showOnlyTableData('destroy')">
+          [ngClass]="{'active': selectedInventoryType === 'destroy'}" (click)="showOnlyTableData('destroy', true)">
           <p class="type count-type">{{destroyList.length}}</p>
           <p class="type label-type">Destroy</p>
         </div>
       </div>
     </div>
   </div>
-  <div [hidden]="!metaData" class="filters d-flex flex-wrap">
+  <div [hidden]="loadingInBackground" class="filters d-flex flex-wrap">
     <p class="page-title">To Initiate a disposition report check the <b>Action</b> column to make your
       selections, then choose an action from the <b>Move To</b> dropdown</p>
     <div class="filters-group lock-group">
@@ -62,7 +61,7 @@
       <a class="action-link" (click)="showAll($event)">Show All</a>
     </div>
   </div>
-  <ng-container *ngIf="metaData">
+  <ng-container *ngIf="!loadingInBackground">
     <div class="table-responsive">
       <table class="table" [ngClass]="{'noselect': pressed}" #inventoryTable>
         <thead [ngClass]="{'col-locked': lockState===states.UN_LOCK}">
