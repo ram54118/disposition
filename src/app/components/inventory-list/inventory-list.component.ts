@@ -343,16 +343,34 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
   filterTableFromValue(value: string) {
     if (value) {
-      this.getTableDataByType(this.selectedInventoryType);
+      this.getFilterTableDataByType(this.selectedInventoryType);
       this.paginationRecords = this.paginationRecords.filter(inventory => {
         return String(inventory[this.selectedColumn]).toLowerCase().indexOf(value.toLowerCase()) >= 0;
       });
       this.inventoryList = this.paginationRecords.slice(0, this.recordsPerScreen);
       this.totalPaginationRecords = this.paginationRecords.length;
     } else {
-      this.showOnlyTableData(this.selectedInventoryType);
+      this.showOnlyTableData(this.selectedInventoryType, false, true);
     }
     this.addLeftPsotionstoTable();
+    this.calculatePaginatorPoints();
+    this.selectAll = this.inventoryList.every(inv => inv.isSelect !== undefined && inv.isSelect === true);
+  }
+
+  private getFilterTableDataByType(type) {
+    switch (type) {
+      case ('store'):
+        this.paginationRecords = cloneDeep(this.totalinventoryList.filter(inv => !(inv.DISPOSITION_STATUS_ID === 2 || inv.DISPOSITION_STATUS_ID === 3)));
+        break;
+      case ('return'):
+        this.paginationRecords = cloneDeep(this.totalinventoryList.filter(inv => inv.DISPOSITION_STATUS_ID === 2));
+        break;
+      case ('destroy'):
+        this.paginationRecords = cloneDeep(this.totalinventoryList.filter(inv => inv.DISPOSITION_STATUS_ID === 3));
+        break;
+      default:
+        this.paginationRecords = cloneDeep(this.totalinventoryList);
+    }
   }
 
   selectInventory(inventory: Inventory) {
@@ -380,8 +398,12 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
         const paginationRecordFromList = this.totalinventoryList.find(inv => inv.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
         paginationRecordFromList.isSelect = inventory.isSelect;
+
+        const selectedInvIndex = this.selectedInventoryList.findIndex(inv => inv.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
+        if (selectedInvIndex === -1) {
+          this.selectedInventoryList.push(inventory);
+        }
       });
-      this.selectedInventoryList = [...this.selectedInventoryList, ...this.inventoryList];
 
     } else {
       this.inventoryList.forEach(inventory => {
@@ -418,7 +440,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.recordsPerScreen = 5;
     this.lockState = LockStates.UN_LOCK;
     this.changeLockState();
-    this.getCategories();
+    // this.getCategories();
     this.selectedInventoryList = [];
     this.showOnlyTableData(this.selectedInventoryType);
     this.calculatePaginatorPoints();
@@ -439,11 +461,12 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   showAll(event?) {
     if (event) {
       this.resetFilters();
+      this.inventoryList = [...cloneDeep(this.storesList), ...cloneDeep(this.destroyList), ...cloneDeep(this.returnsList)].slice(0, this.recordsPerScreen);
+      this.paginationRecords = [...cloneDeep(this.storesList), ...cloneDeep(this.destroyList), ...cloneDeep(this.returnsList)];
+    } else {
+      this.inventoryList = cloneDeep(this.totalinventoryList.slice(0, this.recordsPerScreen));
+      this.paginationRecords = cloneDeep(this.totalinventoryList);
     }
-    // this.inventoryList = cloneDeep(this.totalinventoryList.slice(0, this.recordsPerScreen));
-    // this.paginationRecords = cloneDeep(this.totalinventoryList);
-    this.inventoryList = [...cloneDeep(this.storesList), ...cloneDeep(this.destroyList), ...cloneDeep(this.returnsList)].slice(0, this.recordsPerScreen);
-    this.paginationRecords = [...cloneDeep(this.storesList), ...cloneDeep(this.destroyList), ...cloneDeep(this.returnsList)];
     this.totalPaginationRecords = this.paginationRecords.length;
     this.addLeftPsotionstoTable();
     this.selectedInventoryType = '';
@@ -529,8 +552,12 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.calculatePaginatorPoints();
   }
 
-  showOnlyTableData(type: string, clearFilters?: boolean) {
-    this.getTableDataByType(type);
+  showOnlyTableData(type: string, clearFilters?: boolean, filterData?: boolean) {
+    if (filterData) {
+      this.getFilterTableDataByType(type);
+    } else {
+      this.getTableDataByType(type);
+    }
     this.totalPaginationRecords = this.paginationRecords.length;
     this.addLeftPsotionstoTable();
     this.calculatePaginatorPoints();
