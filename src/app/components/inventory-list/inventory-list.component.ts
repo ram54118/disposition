@@ -692,7 +692,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       class: 'modal-md',
       initialState
     });
+    this.showOrHideModalBackDrop(true);
     bsModalRef.content.onClose.subscribe((response) => {
+      this.showOrHideModalBackDrop(false);
       const reportDetails = this.totalinventoryList[0];
       if (response && reportDetails) {
         const result = {
@@ -749,12 +751,17 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       messages,
       title
     };
-    return this.modalService.show(InformationModalComponent, {
+    this.showOrHideModalBackDrop(true);
+    const modal = this.modalService.show(InformationModalComponent, {
       backdrop: 'static',
       keyboard: false,
       class: 'modal-md info-modal',
       initialState
     });
+    modal.content.onClose.subscribe(() => {
+      this.showOrHideModalBackDrop(false);
+    });
+    return modal;
   }
 
   private openPDF(messages) {
@@ -842,6 +849,8 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       if (emptyDiv) {
         emptyDiv.style.cssText = 'display:none; height: 0px';
       }
+
+      this.createModalBackDrop();
     });
   }
 
@@ -919,6 +928,22 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       for (let j = 0; column && j < column.length; j++) {
         column[j].style.removeProperty('width');
       }
+    }
+  }
+
+  private createModalBackDrop() {
+    const elemDiv = document.createElement('div');
+    elemDiv.classList.add('modal-back-drop');
+    elemDiv.style.cssText = 'top:0;position:absolute;width:100%;height:100%;opacity:0.5;z-index:-1;background:#000;display:none';
+    parent.document.body.appendChild(elemDiv);
+  }
+
+  private showOrHideModalBackDrop(val: boolean) {
+    const modalBackDrop = parent.document.getElementsByClassName('modal-back-drop');
+    if (modalBackDrop && modalBackDrop[0]) {
+      const elem = modalBackDrop[0] as HTMLElement;
+      elem.style.cssText = val ? 'top:0;position:absolute;width:100%;height:100%;opacity:0.5;z-index:-1;background:#000;display:block' :
+        'top:0;position:absolute;width:100%;height:100%;opacity:0.5;z-index:-1;background:#000;display:none';
     }
   }
 }
