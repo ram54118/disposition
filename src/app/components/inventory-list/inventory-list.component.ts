@@ -411,6 +411,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   reset() {
+    this.removeWidthOfHeaders();
     this.storesList = cloneDeep(this.storesListCopy);
     this.returnsList = cloneDeep(this.returnsListCopy);
     this.destroyList = cloneDeep(this.destroyListCopy);
@@ -418,7 +419,6 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.lockState = LockStates.UN_LOCK;
     this.changeLockState();
     this.getCategories();
-
     this.selectedInventoryList = [];
     this.showOnlyTableData(this.selectedInventoryType);
     this.calculatePaginatorPoints();
@@ -458,6 +458,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     if (targetIndex === -1) {
       inventory.isNewlyAdded = true;
       inventory.DISPOSITION_STATUS_ID = dispositionStatusId;
+      inventory.isSelect = false;
       targetList.push(inventory);
     }
 
@@ -535,8 +536,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.calculatePaginatorPoints();
     if (clearFilters) {
       this.resetFilters();
-      this.inventoryList = cloneDeep(this.paginationRecords.slice(0,
-        this.goToPage * this.recordsPerScreen));
+      this.inventoryList = cloneDeep(this.paginationRecords.slice(0, this.recordsPerScreen));
       this.currentPage = 1;
       this.selectedInventoryList = [];
     } else {
@@ -578,7 +578,6 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
           colName = colName.replace('keyboard_arrow_down', '');
           colName = colName.replace('\n', '');
           if (this.lockedColumns.find(col => col.label && col.label.trim().toLowerCase().includes(colName))) {
-            console.log('colName', colName);
             element.style.left = this.lockState === LockStates.ACTIVATE_LOCK ? 'auto' : (left - 1) + 'px';
 
             for (let j = i; j < data.length; j += headers.length) {
@@ -852,6 +851,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
   private resizeAllColumn(event: any) {
     let width = this.startWidth + (event.x - this.startX + 16);
+    width = width < 1 ? 1 : width;
     const thEle = $(this.start).parent();
     thEle.css({ 'min-width': width, 'max-width': width });
     thEle.find("div.column-name").css({ 'width': width - 8 });
@@ -874,5 +874,24 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       }
     }
     return false;
+  }
+
+  private removeWidthOfHeaders(): void {
+    const tableElement = this.inventoryTable ? this.inventoryTable.nativeElement : undefined;
+    for (let i = 0; i < this.columnsList.length; i++) {
+      if (this.columnsList[i].width) {
+        delete this.columnsList[i]['width'];
+      }
+    }
+    const headers = tableElement ? tableElement.querySelectorAll('th') : undefined;
+    for (let i = 0; headers && i < headers.length; i++) {
+      headers[i].style.removeProperty('width');
+      headers[i].style.removeProperty('min-width');
+      headers[i].style.removeProperty('max-width');
+      const column = headers[i].querySelectorAll('.column-name');
+      for (let j = 0; column && j < column.length; j++) {
+        column[j].style.removeProperty('width');
+      }
+    }
   }
 }
