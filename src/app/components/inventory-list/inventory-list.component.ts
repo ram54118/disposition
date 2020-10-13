@@ -932,18 +932,21 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private createModalBackDrop() {
-    const elemDiv = document.createElement('div');
-    elemDiv.classList.add('modal-back-drop');
-    elemDiv.style.cssText = 'top:0;position:absolute;width:100%;height:100%;opacity:0.5;z-index:-1;background:#000;display:none';
-    parent.document.body.appendChild(elemDiv);
+    const iFrame: any = parent.document.querySelector('#right-content iframe');
+    if (iFrame) {
+      const elemDiv = document.createElement('div');
+      elemDiv.classList.add('modal-back-drop');
+      elemDiv.style.cssText = 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:-1;background:#000;display:none';
+      parent.document.body.appendChild(elemDiv);
+    }
   }
 
   private showOrHideModalBackDrop(val: boolean) {
     const modalBackDrop = parent.document.getElementsByClassName('modal-back-drop');
     if (modalBackDrop && modalBackDrop[0]) {
       const elem = modalBackDrop[0] as HTMLElement;
-      elem.style.cssText = val ? 'top:0;position:absolute;width:100%;height:100%;opacity:0.5;z-index:-1;background:#000;display:block' :
-        'top:0;position:absolute;width:100%;height:100%;opacity:0.5;z-index:-1;background:#000;display:none';
+      elem.style.cssText = val ? 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:-1;background:#000;display:block' :
+        'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:-1;background:#000;display:none';
     }
   }
 }

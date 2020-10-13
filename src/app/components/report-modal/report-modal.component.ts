@@ -29,6 +29,7 @@ export class ReportModalComponent implements OnInit {
 
   close() {
     this.bsModalRef.hide();
+    this.onClose.next();
   }
 
   saveReport() {
