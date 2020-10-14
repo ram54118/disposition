@@ -78,7 +78,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     private modalService: BsModalService, private activatedRoute: ActivatedRoute,
     public renderer: Renderer2, private loaderService: LoaderService) { }
   ngOnInit() {
-
+    this.inventoryService.getAssetCredentials().subscribe(data => {
+      this.getQueryParams();
+    });
     this.onPageLoad();
     this.ngZone.runOutsideAngular(() => {
       window.setInterval(() => {
@@ -90,21 +92,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         }
       }, 50);
     });
-    this.activatedRoute.queryParams.pipe(
-      tap(params => {
-        if (!(params.USER_ID && params.REPORT_ID && params.DISPOSITION_HEADER_TOKEN)) {
-          this.showInfoModal('Information', ['Query params missing']);
-        } else {
-          this.queryParams = {
-            USER_ID: params.USER_ID,
-            REPORT_ID: params.REPORT_ID,
-            DISPOSITION_HEADER_TOKEN: params.DISPOSITION_HEADER_TOKEN
-          };
-        }
-      }),
-      filter(params => !!(this.queryParams)),
-      switchMap(params => this.getInventoryListCount())
-    ).subscribe();
+
 
     this.dispositionTypes = [
       {
@@ -234,6 +222,24 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       tap(() => {
         this.addLeftPsotionstoTable();
       })).subscribe();
+  }
+
+  private getQueryParams() {
+    this.activatedRoute.queryParams.pipe(
+      tap(params => {
+        if (!(params.USER_ID && params.REPORT_ID && params.DISPOSITION_HEADER_TOKEN)) {
+          this.showInfoModal('Information', ['Query params missing']);
+        } else {
+          this.queryParams = {
+            USER_ID: params.USER_ID,
+            REPORT_ID: params.REPORT_ID,
+            DISPOSITION_HEADER_TOKEN: params.DISPOSITION_HEADER_TOKEN
+          };
+        }
+      }),
+      filter(params => !!(this.queryParams)),
+      switchMap(params => this.getInventoryListCount())
+    ).subscribe();
   }
 
   getInventoryListCount() {

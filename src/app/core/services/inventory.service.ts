@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { ServerProxyService } from './server-proxy.service';
 
 @Injectable({
@@ -30,7 +30,7 @@ export class InventoryService {
     const userId = metaData.USER_ID;
     const reportId = metaData.REPORT_ID;
     const token = metaData.DISPOSITION_HEADER_TOKEN;
-    const url = token == "null"  ? `InventoryDispositionRecordCount/get?user_id=${userId}&report_id=${reportId}` : `InventoryDispositionRecordCount/get?user_id=${userId}&report_id=${reportId}&disposition_header_token=${token}`;
+    const url = token == "null" ? `InventoryDispositionRecordCount/get?user_id=${userId}&report_id=${reportId}` : `InventoryDispositionRecordCount/get?user_id=${userId}&report_id=${reportId}&disposition_header_token=${token}`;
     return this.serverProxyService.get(url).pipe(catchError((error) => {
       return of(null);
     }));
@@ -42,5 +42,26 @@ export class InventoryService {
     return this.serverProxyService.get(url).pipe(catchError((error) => {
       return of(null);
     }));
+  }
+
+  public getAssetCredentials(): Observable<any> {
+    const url = 'assets/json/mobileVariables.json';
+    // const url = 'api/ePlyMobile/mobileVariables';
+    return this.serverProxyService.get(url).pipe(
+      tap((response: any) => {
+        this.serverProxyService.setBaseUrl(this.getBaseUrl(response))
+      }),
+      catchError((error) => {
+        return of(null);
+      }));
+  }
+
+  private getBaseUrl(response: any): string {
+    if (response && response.WS_OSB_GG) {
+      const detials = response.WS_OSB_GG.split('|||');
+      return detials[detials.length - 1];
+    } else {
+      return 'https://dev.globalpatientgateway.com/fcsosb/v1/';
+    }
   }
 }
