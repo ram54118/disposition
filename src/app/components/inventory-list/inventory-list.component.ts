@@ -686,6 +686,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     const initialState = {
       title: 'Disposition Report'
     };
+    this.isModalOpen = true;
     const bsModalRef = this.modalService.show(ReportModalComponent, {
       backdrop: 'static',
       keyboard: false,
@@ -694,6 +695,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     });
     this.showOrHideModalBackDrop(true);
     bsModalRef.content.onClose.subscribe((response) => {
+      this.isModalOpen = false;
       this.showOrHideModalBackDrop(false);
       const reportDetails = this.totalinventoryList[0];
       if (response && reportDetails) {
@@ -747,18 +749,21 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private showInfoModal(title, messages) {
+    this.isModalOpen = true;
     const initialState = {
       messages,
       title
     };
-    this.showOrHideModalBackDrop(true);
+
     const modal = this.modalService.show(InformationModalComponent, {
       backdrop: 'static',
       keyboard: false,
       class: 'modal-md info-modal',
       initialState
     });
+    this.showOrHideModalBackDrop(true);
     modal.content.onClose.subscribe(() => {
+      this.isModalOpen = false;
       this.showOrHideModalBackDrop(false);
     });
     return modal;
@@ -813,11 +818,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       // interval to show modal for every 2mins
       window.setInterval(() => {
         if (!this.isModalOpen) {
-          this.isModalOpen = true;
           const modal = this.showInfoModal('Please save your changes.', '');
-          modal.content.onClose.subscribe(() => {
-            this.isModalOpen = false;
-          });
         }
 
       }, 300000);
@@ -934,9 +935,10 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   private createModalBackDrop() {
     const iFrame: any = parent.document.querySelector('#right-content iframe');
     if (iFrame) {
+      iFrame.style['z-index'] = 99999;
       const elemDiv = document.createElement('div');
       elemDiv.classList.add('modal-back-drop');
-      elemDiv.style.cssText = 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:-1;background:#000;display:none';
+      elemDiv.style.cssText = 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:none';
       parent.document.body.appendChild(elemDiv);
     }
   }
@@ -944,9 +946,22 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   private showOrHideModalBackDrop(val: boolean) {
     const modalBackDrop = parent.document.getElementsByClassName('modal-back-drop');
     if (modalBackDrop && modalBackDrop[0]) {
+      const scrollPosition = this.getScrollPosition();
+      const modal = document.querySelector('.modal') as any;
+      if (modal) {
+        modal.style['top'] = scrollPosition + "px";
+      }
       const elem = modalBackDrop[0] as HTMLElement;
-      elem.style.cssText = val ? 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:-1;background:#000;display:block' :
-        'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:-1;background:#000;display:none';
+      elem.style.cssText = val ? 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:block' :
+        'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:none';
     }
+  }
+
+  private getScrollPosition() {
+    let sy, d = parent.document,
+      r = d.documentElement,
+      b = d.body;
+    sy = r.scrollTop || b.scrollTop || 0;
+    return sy;
   }
 }
