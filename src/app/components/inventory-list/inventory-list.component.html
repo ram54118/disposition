@@ -96,12 +96,12 @@
               <td *ngIf="column.label && column.label !== 'Action' && column.value" [title]=" inventory[column.value]"
                 [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked(column.value)}">
-                <div class="col-value" *ngIf="column.value !== 'BATCH_EXPIRATION_DATE'; else dateVal"
+                <div class="col-value"
                   [ngStyle]="{'width.px': column.width ? (column.width-15 < 0 ? 0 : column.width-15): 'auto'}">
                   {{inventory[column.value]}}</div>
-                <ng-template #dateVal>
+                <!-- <ng-template #dateVal>
                   <div class="col-value">{{inventory[column.value] | date:'d/MMM/yyyy'}}</div>
-                </ng-template>
+                </ng-template> -->
               </td>
               <td *ngIf="column.label === 'Action'"
                 [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}"

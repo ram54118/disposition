@@ -10,6 +10,7 @@ import { Inventory } from './../../models/inventory';
 import { InformationModalComponent } from './../information-modal/information-modal.component';
 import * as $ from 'jquery';// import Jquery here
 import { cloneDeep } from 'lodash';
+import { DatePipe } from '@angular/common';
 
 enum LockStates {
   ACTIVATE_LOCK = 'ACTIVATE_LOCK',
@@ -20,7 +21,8 @@ const mainDomOccupiedHeight = 50;
 @Component({
   selector: 'app-inventory-list',
   templateUrl: './inventory-list.component.html',
-  styleUrls: ['./inventory-list.component.scss']
+  styleUrls: ['./inventory-list.component.scss'],
+  providers: [DatePipe]
 })
 export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   public selectedInventoryType: string;
@@ -76,7 +78,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   @ViewChild('inventoryTable', { static: false }) public inventoryTable: any;
   constructor(private ngZone: NgZone, private inventoryService: InventoryService,
     private modalService: BsModalService, private activatedRoute: ActivatedRoute,
-    public renderer: Renderer2, private loaderService: LoaderService) { }
+    public renderer: Renderer2, private loaderService: LoaderService, private datePipe: DatePipe) { }
   ngOnInit() {
     this.inventoryService.getAssetCredentials().subscribe(data => {
       this.getQueryParams();
@@ -269,6 +271,10 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     return forkJoin(requests).pipe(
       map((response: any) => response.map(r => r.result.data.getDispositionDetOutput)),
       tap(response => {
+        response[0].forEach((inv) => {
+          inv['BATCH_EXPIRATION_DATE'] = inv['BATCH_EXPIRATION_DATE'] ?
+            this.datePipe.transform(new Date(inv['BATCH_EXPIRATION_DATE']), 'd/MMM/yyyy') : inv['BATCH_EXPIRATION_DATE']
+        });
         const remainIngList = response.flat(1);
         this.totalinventoryList = cloneDeep(remainIngList);
         this.paginationRecords = cloneDeep(this.totalinventoryList);
@@ -658,11 +664,21 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
             break;
           case ('date'):
             if (column.sort) {
-              sortingList = this.paginationRecords.sort((a, b) =>
-                b[column.value] !== null && a[column.value] !== null && new Date(b[column.value]).valueOf() - new Date(a[column.value]).valueOf());
+              sortingList = this.paginationRecords.sort((a, b) => {
+                if (b[column.value] !== null && a[column.value] !== null) {
+                  return new Date(b[column.value]).valueOf() - new Date(a[column.value]).valueOf();
+                } else {
+                  return -1;
+                }
+              });
             } else {
-              sortingList = this.paginationRecords.sort((a, b) =>
-                b[column.value] !== null && a[column.value] !== null && new Date(a[column.value]).valueOf() - new Date(b[column.value]).valueOf());
+              sortingList = this.paginationRecords.sort((a, b) => {
+                if (b[column.value] !== null && a[column.value] !== null) {
+                  return new Date(a[column.value]).valueOf() - new Date(b[column.value]).valueOf();
+                } else {
+                  return -1;
+                }
+              });
             }
             break;
           default:
@@ -813,6 +829,10 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
   discardDisposition() {
     this.loaderService.show();
+    setTimeout(() => {
+      const spinner = document.querySelector('.spinner') as HTMLElement;
+      spinner.style.top = this.getScrollPosition() + 'px';
+    });
     const element = parent.document.getElementsByClassName('goBackToReport');
     const firstElement = element[0] as HTMLElement;
     if (element && firstElement) {
@@ -940,8 +960,8 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
   private createModalBackDrop() {
     const iFrame: any = parent.document.querySelector('#right-content iframe');
-    if (iFrame) {
-      iFrame.style['z-index'] = 99999;
+    const backdrop = parent.document.querySelector('.modal-back-drop');
+    if (iFrame && !backdrop) {
       const elemDiv = document.createElement('div');
       elemDiv.classList.add('modal-back-drop');
       elemDiv.style.cssText = 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:none';
@@ -952,11 +972,18 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   private showOrHideModalBackDrop(val: boolean) {
     const modalBackDrop = parent.document.getElementsByClassName('modal-back-drop');
     if (modalBackDrop && modalBackDrop[0]) {
-      const scrollPosition = this.getScrollPosition();
-      const modal = document.querySelector('.modal') as any;
-      if (modal) {
-        modal.style['top'] = scrollPosition + "px";
+      const iFrame: any = parent.document.querySelector('#right-content iframe');
+      if (iFrame && val) {
+        iFrame.style['z-index'] = 99999;
+        const scrollPosition = this.getScrollPosition();
+        const modals = document.querySelectorAll('.modal') as any;
+        if (modals && modals.length) {
+          modals.forEach(modal => modal.style['top'] = scrollPosition + "px")
+        }
+      } else {
+        iFrame.style['z-index'] = 9;
       }
+
       const elem = modalBackDrop[0] as HTMLElement;
       elem.style.cssText = val ? 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:block' :
         'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:none';
