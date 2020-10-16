@@ -832,6 +832,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     setTimeout(() => {
       const spinner = document.querySelector('.spinner') as HTMLElement;
       spinner.style.top = this.getScrollPosition() + 'px';
+      this.showOrHideModalBackDrop(true);
     });
     const element = parent.document.getElementsByClassName('goBackToReport');
     const firstElement = element[0] as HTMLElement;
@@ -964,7 +965,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     if (iFrame && !backdrop) {
       const elemDiv = document.createElement('div');
       elemDiv.classList.add('modal-back-drop');
-      elemDiv.style.cssText = 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:none';
+      elemDiv.style.cssText = 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:none; transition: opacity .30s linear;';
       parent.document.body.appendChild(elemDiv);
     }
   }
@@ -980,13 +981,17 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         if (modals && modals.length) {
           modals.forEach(modal => modal.style['top'] = scrollPosition + "px")
         }
+      }
+      const elem = modalBackDrop[0] as HTMLElement;
+      if (!val) {
+        setTimeout(() => {
+          iFrame.style['z-index'] = 9;
+          elem.style.display = 'none';
+        }, 625);
       } else {
-        iFrame.style['z-index'] = 9;
+        elem.style.display = 'block';
       }
 
-      const elem = modalBackDrop[0] as HTMLElement;
-      elem.style.cssText = val ? 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:block' :
-        'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:none';
     }
   }
 
