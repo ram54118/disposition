@@ -9,7 +9,7 @@ import { InventoryService } from './../../core/services/inventory.service';
 import { Inventory } from './../../models/inventory';
 import { InformationModalComponent } from './../information-modal/information-modal.component';
 import * as $ from 'jquery';// import Jquery here
-import { cloneDeep } from 'lodash';
+import { cloneDeep, orderBy } from 'lodash';
 import { DatePipe } from '@angular/common';
 
 enum LockStates {
@@ -652,41 +652,20 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         let sortingList;
         switch (column.type) {
           case ('string'):
-            if (column.sort) {
-              sortingList = this.paginationRecords.sort(function (a, b) {
-                return a[column.value] === null ? -1 : b[column.value] === null ? 1 : a[column.value].toString().localeCompare(b[column.value]);
-              });
-            } else {
-              sortingList = this.paginationRecords.sort(function (a, b) {
-                return b[column.value] === null ? -1 : a[column.value] === null ? 1 : b[column.value].toString().localeCompare(a[column.value]);
-              });
-            }
+            sortingList = orderBy(this.paginationRecords, (o) => {
+              return o[column.value];
+            }, column.sort ? 'desc' : 'asc');
             break;
           case ('date'):
-            if (column.sort) {
-              sortingList = this.paginationRecords.sort((a, b) => {
-                if (b[column.value] !== null && a[column.value] !== null) {
-                  return new Date(b[column.value]).valueOf() - new Date(a[column.value]).valueOf();
-                } else {
-                  return -1;
-                }
-              });
-            } else {
-              sortingList = this.paginationRecords.sort((a, b) => {
-                if (b[column.value] !== null && a[column.value] !== null) {
-                  return new Date(a[column.value]).valueOf() - new Date(b[column.value]).valueOf();
-                } else {
-                  return -1;
-                }
-              });
-            }
+            sortingList = orderBy(this.paginationRecords, (o) => {
+              return new Date(o[column.value]);
+            }, column.sort ? 'desc' : 'asc');
+
             break;
           default:
-            if (column.sort) {
-              sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && a[column.value].localeCompare(b[column.value]));
-            } else {
-              sortingList = this.paginationRecords.sort((a, b) => b[column.value] !== null && a[column.value] !== null && b[column.value].localeCompare(a[column.value]));
-            }
+            sortingList = orderBy(this.paginationRecords, (o) => {
+              return o[column.value];
+            }, column.sort ? 'desc' : 'asc');
         }
         this.inventoryList = sortingList.slice(0, this.recordsPerScreen);
         this.addLeftPsotionstoTable();
