@@ -46,7 +46,7 @@ export class InventoryService {
 
   public getAssetCredentials(): Observable<any> {
     const url = 'assets/json/mobileVariables.json';
-    // const url = 'api/ePlyMobile/mobileVariables';
+    // const url = 'api/ePlyMobile/fcsosb';
     return this.serverProxyService.get(url).pipe(
       tap((response: any) => {
         this.serverProxyService.setBaseUrl(this.getBaseUrl(response))
@@ -60,8 +60,10 @@ export class InventoryService {
     if (response && response.WS_OSB_GG) {
       const detials = response.WS_OSB_GG.split('|||');
       return detials[detials.length - 1];
-    } else {
-      return 'https://dev.globalpatientgateway.com/fcsosb/v1/';
     }
+    // else {
+    //   return 'https://dev.globalpatientgateway.com/fcsosb/v1/';
+    // }
   }
+
 }

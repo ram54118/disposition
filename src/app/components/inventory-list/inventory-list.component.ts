@@ -649,25 +649,25 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     if (this.lockState !== this.states.LOCK_ACTIVATED) {
       if (column.label !== 'Action') {
         column.sort = column.sort ? false : true;
-        let sortingList;
         switch (column.type) {
           case ('string'):
-            sortingList = orderBy(this.paginationRecords, (o) => {
+            this.paginationRecords = orderBy(this.paginationRecords, (o) => {
               return o[column.value];
             }, column.sort ? 'desc' : 'asc');
             break;
           case ('date'):
-            sortingList = orderBy(this.paginationRecords, (o) => {
+            this.paginationRecords = orderBy(this.paginationRecords, (o) => {
               return new Date(o[column.value]);
             }, column.sort ? 'desc' : 'asc');
 
             break;
           default:
-            sortingList = orderBy(this.paginationRecords, (o) => {
+            this.paginationRecords = orderBy(this.paginationRecords, (o) => {
               return o[column.value];
             }, column.sort ? 'desc' : 'asc');
         }
-        this.inventoryList = sortingList.slice(0, this.recordsPerScreen);
+        this.inventoryList = (this.paginationRecords.slice((this.goToPage - 1) * this.recordsPerScreen,
+          this.goToPage * this.recordsPerScreen));
         this.addLeftPsotionstoTable();
       }
     } else {
@@ -811,7 +811,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     setTimeout(() => {
       const spinner = document.querySelector('.spinner') as HTMLElement;
       spinner.style.top = this.getScrollPosition() + 'px';
-      this.showOrHideModalBackDrop(true);
+      //this.showOrHideModalBackDrop(true);
     });
     const element = parent.document.getElementsByClassName('goBackToReport');
     const firstElement = element[0] as HTMLElement;
@@ -944,7 +944,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     if (iFrame && !backdrop) {
       const elemDiv = document.createElement('div');
       elemDiv.classList.add('modal-back-drop');
-      elemDiv.style.cssText = 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:none; transition: opacity .30s linear;';
+      elemDiv.style.cssText = 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:none';
       parent.document.body.appendChild(elemDiv);
     }
   }
@@ -960,17 +960,13 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         if (modals && modals.length) {
           modals.forEach(modal => modal.style['top'] = scrollPosition + "px")
         }
-      }
-      const elem = modalBackDrop[0] as HTMLElement;
-      if (!val) {
-        setTimeout(() => {
-          iFrame.style['z-index'] = 9;
-          elem.style.display = 'none';
-        }, 625);
       } else {
-        elem.style.display = 'block';
+        iFrame.style['z-index'] = 9;
       }
 
+      const elem = modalBackDrop[0] as HTMLElement;
+      elem.style.cssText = val ? 'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:block' :
+        'top:0;position:fixed;width:100%;height:100%;opacity:0.5;z-index:9999;background:#000;display:none';
     }
   }
 

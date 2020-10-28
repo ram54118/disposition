@@ -26,7 +26,8 @@
   <div [hidden]="loadingInBackground" class="filters d-flex flex-wrap">
     <!-- <p class="page-title">To Initiate a disposition report check the <b>Action</b> column to make your
       selections, then choose an action from the <b>Move To</b> dropdown</p> -->
-    <p class="page-title">To initiate a disposition report, checkbox a row to make your selection(s) , then choose an action
+    <p class="page-title">To initiate a disposition report, checkbox a row to make your selection(s) , then choose an
+      action
       from the <b>Move To</b> dropdown.
     <div class="filters-group lock-group">
       <div class="lock d-flex m-0">
@@ -106,7 +107,8 @@
               <td *ngIf="column.label === 'Action'"
                 [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked(column.value)}">
-                <div class="col-value" [ngStyle]="{'width.px': column.width ? (column.width-15 < 0 ? 0 : column.width-15) : 'auto'}">
+                <div class="col-value"
+                  [ngStyle]="{'width.px': column.width ? (column.width-15 < 0 ? 0 : column.width-15) : 'auto'}">
                   {{inventory[column.value] === 2 ? 'Return' : inventory[column.value] === 3 ? 'Destroy' :'Store' }}
                 </div>
               </td>
@@ -129,7 +131,8 @@
     <div class="action-buttons">
       <button class="btn btn-primary l-btn mr-2" type="button" (click)="discardDisposition()">Discard
         Disposition</button>
-      <button class="btn btn-primary l-btn mr-2" type="button" (click)="getReportDetails('S')" [disabled]="!metaData">Save Disposition</button>
+      <button class="btn btn-primary l-btn mr-2" type="button" (click)="getReportDetails('S')"
+        [disabled]="!metaData">Save Disposition</button>
       <button *ngIf="showCompleteBtn" class="btn btn-primary l-btn" type="button"
         (click)="getReportDetails('C')">Complete Disposition</button>
     </div>
