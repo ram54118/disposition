@@ -822,9 +822,12 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   private plsSaveYourChanges() {
     this.ngZone.runOutsideAngular(() => {
       // interval to show modal for every 2mins
-      window.setInterval(() => {
+      window.setTimeout(() => {
         if (!this.isModalOpen) {
           const modal = this.showInfoModal('Please save your changes.', '');
+          modal.content.onClose.subscribe(() => {
+            this.plsSaveYourChanges();
+          });
         }
 
       }, 300000);
