@@ -286,6 +286,10 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         this.goToPage = 1;
         this.calculatePaginatorPoints();
         this.plsSaveYourChanges();
+        setTimeout(() => {
+          this.moveColumns();
+        });
+
       })
     );
   }
@@ -896,6 +900,12 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private resizeAllColumn(event: any) {
+    if (event.stopPropagation) {
+      event.stopPropagation();
+    }
+    if (event.preventDefault) {
+      event.preventDefault();
+    }
     let width = this.startWidth + (event.x - this.startX + 16);
     width = width < 1 ? 1 : width;
     const thEle = $(this.start).parent();
@@ -908,6 +918,100 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.columnsList[this.onMouseDownIndex]['width'] = width;
     if (this.lockedColumns.length > 0 && this.lockState !== LockStates.LOCK_ACTIVATED) {
       this.addLeftPsotionstoTable();
+    }
+  }
+
+  private moveColumns() {
+    let _this = this;
+    const $table = $('#inv-table');
+    const cols = $table.find('thead tr th');
+    const options = {
+      drag: true,
+      dragClass: "drag",
+      movedContainerSelector: ".move-column",
+      overClass: "over",
+      onDragEnd: ''
+    };
+    let dragSrcEl;
+    let dragSrcEnter;
+    [].forEach.call(cols, (col) => {
+      col.setAttribute('draggable', true);
+
+      $(col).on('dragstart', handleDragStart);
+      $(col).on('dragenter', handleDragEnter);
+      $(col).on('dragover', handleDragOver);
+      $(col).on('dragleave', handleDragLeave);
+      $(col).on('drop', handleDrop);
+      $(col).on('dragend', handleDragEnd);
+    });
+
+    function handleDragStart(e) {
+
+      $(e.target).addClass(options.dragClass);
+      dragSrcEl = e.target;
+      e.originalEvent.dataTransfer.effectAllowed = 'copy';
+      e.originalEvent.dataTransfer.setData('text/html', e.target.id);
+    }
+
+    function handleDragOver(e) {
+      if (e.preventDefault) {
+        e.preventDefault();
+      }
+      e.originalEvent.dataTransfer.dropEffect = 'copy';
+      return;
+    }
+    function handleDragEnter(e) {
+      this.dragSrcEnter = e.target;
+      [].forEach.call(cols, function (col) {
+        $(col).removeClass(options.overClass);
+      });
+      $(e.target).addClass(options.overClass);
+      return;
+    }
+    function handleDragLeave(e) {
+      if (dragSrcEnter !== e) {
+      }
+    }
+    function handleDrop(e) {
+      if (e.stopPropagation) {
+        e.stopPropagation();
+      }
+      if (dragSrcEl !== e) {
+        copyColumns($(dragSrcEl).index(), $(this).index());
+      }
+      return;
+    }
+    function handleDragEnd(e) {
+      const colPositions = {
+        array: [],
+        object: {}
+      };
+      [].forEach.call(cols, function (col) {
+        const name = $(col).attr('data-name') || $(col).index();
+        $(col).removeClass(options.overClass);
+        colPositions.object[name] = $(col).index();
+        colPositions.array.push($(col).index());
+      });
+      $(dragSrcEl).removeClass(options.dragClass);
+      return;
+    }
+
+    function insertAfter(elem, refElem) {
+      return refElem.parentNode.insertBefore(elem, refElem.nextSibling);
+    }
+
+    function copyColumns(fromIndex, toIndex) {
+      const rows = $table.find(options.movedContainerSelector);
+      for (let i = 0; i < rows.length; i++) {
+        if (toIndex > fromIndex) {
+          insertAfter(rows[i].children[fromIndex], rows[i].children[toIndex]);
+        } else if (toIndex < $table.find('thead tr th').length - 1) {
+          rows[i].insertBefore(rows[i].children[fromIndex], rows[i].children[toIndex]);
+        }
+      }
+      const col = _this.columnsList[fromIndex];
+      _this.columnsList.splice(fromIndex, 1);
+      _this.columnsList.splice(toIndex, 0, col);
     }
   }
 

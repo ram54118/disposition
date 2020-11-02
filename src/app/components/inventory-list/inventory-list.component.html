@@ -67,9 +67,9 @@
   </div>
   <ng-container *ngIf="!loadingInBackground">
     <div class="table-responsive">
-      <table class="table" [ngClass]="{'noselect': pressed}" #inventoryTable>
+      <table id="inv-table" class="table" [ngClass]="{'noselect': pressed}" #inventoryTable>
         <thead [ngClass]="{'col-locked': lockState===states.UN_LOCK}">
-          <tr>
+          <tr class="move-column">
             <ng-container *ngFor="let column of columnsList; let i=index">
               <th *ngIf="column.value === 'check_box'" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
                 this.isColumnLocked(column.value)}" class="checkbox-column"><input type="checkbox"
@@ -89,7 +89,7 @@
           </tr>
         </thead>
         <tbody [ngClass]="{'col-locked': lockState===states.UN_LOCK}">
-          <tr *ngFor="let inventory of inventoryList">
+          <tr class="move-column" *ngFor="let inventory of inventoryList">
             <ng-container *ngFor="let column of columnsList; let i=index">
               <td *ngIf="!column.label" class="checkbox-column"
                 [ngClass]="{ 'lock-activated': lockState===states.UN_LOCK && this.isColumnLocked('check_box')}"><input
