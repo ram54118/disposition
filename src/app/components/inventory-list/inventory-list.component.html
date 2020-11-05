@@ -76,14 +76,14 @@
                   [(ngModel)]="selectAll" (change)="selectOrUnSelectAll($event)" /></th>
               <th *ngIf="column.value !== 'check_box'" class="clickable" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
                 this.isColumnLocked(column.value), 'dragable': pressed}" (click)="sortColumn(column, i, $event)"
-                (mousedown)="onMouseDown($event, i)"
+               
                 [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}">
                 <div class="column-name" [title]="column.label"><span class="col-name">{{column.label}}</span>
                   <mat-icon aria-hidden="false" class="col-icon">
                     {{column.sort === true ? 'keyboard_arrow_up' : column.sort === false ? 'keyboard_arrow_down': ''}}
                   </mat-icon>
                 </div>
-                <span class="ui-column-resizer"></span>
+                <span class="ui-column-resizer"  (mousedown)="onMouseDown($event, i)"></span>
               </th>
             </ng-container>
           </tr>

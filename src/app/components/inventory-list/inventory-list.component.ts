@@ -870,14 +870,20 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
   // Column Width Adjuster
   public onMouseDown(event, index) {
-    if (event.target.className === 'ui-column-resizer') {
+    if (event.stopPropagation) {
+      event.stopPropagation();
+    }
+    if (event.preventDefault) {
+      event.preventDefault();
+    }
+    if (event.target.classList.contains('ui-column-resizer')) {
       this.pressed = true;
     }
     this.start = event.target;
     this.startX = event.x;
     this.startWidth = $(this.start).parent().width();
     this.onMouseDownIndex = index;
-    if (!this.isInitSet && event.target.className === 'ui-column-resizer') {
+    if (event.target.classList.contains('ui-column-resizer')) {
       this.initResizableColumns();
       this.isInitSet = true;
     }
@@ -900,12 +906,6 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private resizeAllColumn(event: any) {
-    if (event.stopPropagation) {
-      event.stopPropagation();
-    }
-    if (event.preventDefault) {
-      event.preventDefault();
-    }
     let width = this.startWidth + (event.x - this.startX + 16);
     width = width < 1 ? 1 : width;
     const thEle = $(this.start).parent();
@@ -925,6 +925,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     let _this = this;
     const $table = $('#inv-table');
     const cols = $table.find('thead tr th');
+    // const columnNames = $table.find('thead tr .column-name');
     const options = {
       drag: true,
       dragClass: "drag",
@@ -936,7 +937,6 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     let dragSrcEnter;
     [].forEach.call(cols, (col) => {
       col.setAttribute('draggable', true);
-
       $(col).on('dragstart', handleDragStart);
       $(col).on('dragenter', handleDragEnter);
       $(col).on('dragover', handleDragOver);
@@ -1012,6 +1012,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       const col = _this.columnsList[fromIndex];
       _this.columnsList.splice(fromIndex, 1);
       _this.columnsList.splice(toIndex, 0, col);
+     // _this.initResizableColumns();
     }
   }
 
