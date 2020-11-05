@@ -1,0 +1,109 @@
+{
+  "columnsList": [
+  {
+    "value": "check_box",
+    "label": ""
+  },
+  {
+    "value": "DISPOSITION_STATUS_ID",
+    "label": "Action",
+    "type": "string"
+  },
+  {
+    "label": "Client",
+    "value": "CLIENT_NAME",
+    "type": "string"
+  },
+  {
+    "label": "Protocol",
+    "value": "PROTOCOL",
+    "type": "string"
+  },
+  {
+    "label": "Facility",
+    "value": "FACILITY_NAME",
+    "type": "string"
+  },
+  {
+    "label": "Part ID",
+    "value": "COMPONENT_CODE",
+    "type": "string"
+  },
+  {
+    "label": "Client Part ID",
+    "value": "CLIENT_PRODUCT_ID",
+    "type": "string"
+  },
+  {
+    "label": "Description (unblinded)",
+    "value": "COMPONENT_DESCRIPTION",
+    "type": "string"
+  },
+  {
+    "label": "Lot ID (Manufacturer)",
+    "value": "MANUFACTURERS_LOT_NUMBER",
+    "type": "string"
+  },
+  {
+    "label": "Lot ID (Client)",
+    "value": "CLIENT_LOT_NUMBER",
+    "type": "string"
+  },
+  {
+    "label": "Expiry Date",
+    "value": "BATCH_EXPIRATION_DATE",
+    "type": "date"
+  },
+  {
+    "label": "Receipt ID",
+    "value": "RECEIPT_CODE",
+    "type": "string"
+  },
+  {
+    "label": "Box ID",
+    "value": "BOX_CODE",
+    "type": "string"
+  },
+  {
+    "label": "Client Container ID",
+    "value": "CLIENT_CONTAINER_NUMBER",
+    "type": "string"
+  },
+  {
+    "label": "Lot Status",
+    "value": "BATCH_STATUS",
+    "type": "string"
+  },
+  {
+    "label": "Box Status",
+    "value": "INVENTORY_STATUS",
+    "type": "string"
+  },
+  {
+    "label": "Quantity",
+    "value": "QUANTITY",
+    "type": "string"
+  },
+  {
+    "label": "Unit of Measure",
+    "value": "UOM",
+    "type": "string"
+  },
+  {
+    "label": "Sample Type",
+    "value": "SAMPLE_TYPE",
+    "type": "string"
+  },
+  {
+    "label": "Warehouse",
+    "value": "WAREHOUSE_NAME",
+    "type": "string"
+  },
+  {
+    "label": "Location",
+    "value": "STORAGE_LOCATION",
+    "type": "string"
+  }
+  ],
+  "rowsPerScreen":10
+}

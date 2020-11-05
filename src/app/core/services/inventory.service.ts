@@ -44,6 +44,14 @@ export class InventoryService {
     }));
   }
 
+  public getMetaData(): Observable<any> {
+    const url = 'assets/json/metadata.json';
+    return this.serverProxyService.get(url).pipe(
+      catchError((error) => {
+        return of(null);
+      }));
+  }
+
   public getAssetCredentials(): Observable<any> {
     const url = 'assets/json/mobileVariables.json';
     // const url = 'api/ePlyMobile/fcsosb';

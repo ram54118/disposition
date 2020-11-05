@@ -12,6 +12,114 @@ import * as $ from 'jquery';// import Jquery here
 import { cloneDeep, orderBy } from 'lodash';
 import { DatePipe } from '@angular/common';
 
+const columnsList = [
+  {
+    value: 'check_box',
+    label: ''
+  },
+  {
+    value: 'DISPOSITION_STATUS_ID',
+    label: 'Action',
+    type: 'string'
+  },
+  {
+    label: 'Client',
+    value: 'CLIENT_NAME',
+    type: 'string'
+  },
+  {
+    label: 'Protocol',
+    value: 'PROTOCOL',
+    type: 'string'
+  },
+  {
+    label: 'Facility',
+    value: 'FACILITY_NAME',
+    type: 'string'
+  },
+  {
+    label: 'Part ID',
+    value: 'COMPONENT_CODE',
+    type: 'string'
+  },
+  {
+    label: 'Client Part ID',
+    value: 'CLIENT_PRODUCT_ID',
+    type: 'string'
+  },
+  {
+    label: 'Description (unblinded)',
+    value: 'COMPONENT_DESCRIPTION',
+    type: 'string'
+  },
+  {
+    label: 'Lot ID (Manufacturer)',
+    value: 'MANUFACTURERS_LOT_NUMBER',
+    type: 'string'
+  },
+  {
+    label: 'Lot ID (Client)',
+    value: 'CLIENT_LOT_NUMBER',
+    type: 'string'
+  },
+  {
+    label: 'Expiry Date',
+    value: 'BATCH_EXPIRATION_DATE',
+    type: 'date'
+  },
+  {
+    label: 'Receipt ID',
+    value: 'RECEIPT_CODE',
+    type: 'string'
+  },
+  {
+    label: 'Box ID',
+    value: 'BOX_CODE',
+    type: 'string'
+  },
+  {
+    label: 'Client Container ID',
+    value: 'CLIENT_CONTAINER_NUMBER',
+    type: 'string'
+  },
+  {
+    label: 'Lot Status',
+    value: 'BATCH_STATUS',
+    type: 'string'
+  },
+  {
+    label: 'Box Status',
+    value: 'INVENTORY_STATUS',
+    type: 'string'
+  },
+  {
+    label: 'Quantity',
+    value: 'QUANTITY',
+    type: 'string'
+  },
+
+  {
+    label: 'Unit of Measure',
+    value: 'UOM',
+    type: 'string'
+  },
+  {
+    label: 'Sample Type',
+    value: 'SAMPLE_TYPE',
+    type: 'string'
+  },
+  {
+    label: 'Warehouse',
+    value: 'WAREHOUSE_NAME',
+    type: 'string'
+  },
+  {
+    label: 'Location',
+    value: 'STORAGE_LOCATION',
+    type: 'string'
+  },
+];
+
 enum LockStates {
   ACTIVATE_LOCK = 'ACTIVATE_LOCK',
   LOCK_ACTIVATED = 'LOCK_ACTIVATED',
@@ -110,113 +218,6 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         value: 'allOthers'
       }
     ];
-    this.columnsList = [
-      {
-        value: 'check_box',
-        label: ''
-      },
-      {
-        value: 'DISPOSITION_STATUS_ID',
-        label: 'Action',
-        type: 'string'
-      },
-      {
-        label: 'Client',
-        value: 'CLIENT_NAME',
-        type: 'string'
-      },
-      {
-        label: 'Protocol',
-        value: 'PROTOCOL',
-        type: 'string'
-      },
-      {
-        label: 'Facility',
-        value: 'FACILITY_NAME',
-        type: 'string'
-      },
-      {
-        label: 'Part ID',
-        value: 'COMPONENT_CODE',
-        type: 'string'
-      },
-      {
-        label: 'Client Part ID',
-        value: 'CLIENT_PRODUCT_ID',
-        type: 'string'
-      },
-      {
-        label: 'Description (unblinded)',
-        value: 'COMPONENT_DESCRIPTION',
-        type: 'string'
-      },
-      {
-        label: 'Lot ID (Manufacturer)',
-        value: 'MANUFACTURERS_LOT_NUMBER',
-        type: 'string'
-      },
-      {
-        label: 'Lot ID (Client)',
-        value: 'CLIENT_LOT_NUMBER',
-        type: 'string'
-      },
-      {
-        label: 'Expiry Date',
-        value: 'BATCH_EXPIRATION_DATE',
-        type: 'date'
-      },
-      {
-        label: 'Receipt ID',
-        value: 'RECEIPT_CODE',
-        type: 'string'
-      },
-      {
-        label: 'Box ID',
-        value: 'BOX_CODE',
-        type: 'string'
-      },
-      {
-        label: 'Client Container ID',
-        value: 'CLIENT_CONTAINER_NUMBER',
-        type: 'string'
-      },
-      {
-        label: 'Lot Status',
-        value: 'BATCH_STATUS',
-        type: 'string'
-      },
-      {
-        label: 'Box Status',
-        value: 'INVENTORY_STATUS',
-        type: 'string'
-      },
-      {
-        label: 'Quantity',
-        value: 'QUANTITY',
-        type: 'string'
-      },
-
-      {
-        label: 'Unit of Measure',
-        value: 'UOM',
-        type: 'string'
-      },
-      {
-        label: 'Sample Type',
-        value: 'SAMPLE_TYPE',
-        type: 'string'
-      },
-      {
-        label: 'Warehouse',
-        value: 'WAREHOUSE_NAME',
-        type: 'string'
-      },
-      {
-        label: 'Location',
-        value: 'STORAGE_LOCATION',
-        type: 'string'
-      },
-    ];
 
     fromEvent(window, 'resize').pipe(
       debounceTime(500),
@@ -240,8 +241,21 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         }
       }),
       filter(params => !!(this.queryParams)),
-      switchMap(params => this.getInventoryListCount())
+      switchMap(params => this.loadMetadata())
     ).subscribe();
+  }
+
+  loadMetadata() {
+    return forkJoin([this.getInventoryListCount(), this.getMetaData()]);
+  }
+
+  private getMetaData() {
+    return this.inventoryService.getMetaData().pipe(
+      tap(response => {
+        this.columnsList = response && response.columnsList ? response.columnsList : columnsList;
+        this.recordsPerScreen = response && response.recordsPerScreen ? response.recordsPerScreen : 5;
+      }
+    ));
   }
 
   getInventoryListCount() {
@@ -259,6 +273,11 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       filter(list => !!(list && list.result.data.record_count)),
       switchMap(result => this.getTotalRecords())
     );
+  }
+
+  saveMetaData() {
+    const data = {columnsList : this.columnsList, recordsPerScreen: this.recordsPerScreen};
+    console.log(data);
   }
 
   getTotalRecords(): Observable<any> {
