@@ -54,7 +54,7 @@
         <label for="sel1">Filter</label>
         <select class="form-control" [(ngModel)]="selectedColumn">
           <ng-container *ngFor="let option of columnsList">
-            <option *ngIf="option.label && option.label !== 'Action'" [value]="option.value">{{option.label}}</option>
+            <option *ngIf="option && option.label !== 'Action'" [value]="option.value">{{option.label}}</option>
           </ng-container>
         </select>
         <input type="text" [disabled]="!selectedColumn" [(ngModel)]="searchValue" class="form-control mx-2"
@@ -75,8 +75,8 @@
               <th *ngIf="column.value === 'check_box'" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
                 this.isColumnLocked(column.value)}" class="checkbox-column"><input type="checkbox"
                   [(ngModel)]="selectAll" (change)="selectOrUnSelectAll($event)" /></th>
-              <th *ngIf="column.value !== 'check_box'" class="clickable" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
-                this.isColumnLocked(column.value), 'dragable': pressed}" (click)="sortColumn(column, i, $event)"
+              <th [attr.data-colum-id]="column.id" *ngIf="column.value !== 'check_box'" class="clickable" [ngClass]="{'lock-column': lockState === states.LOCK_ACTIVATED, 'lock-activated':
+                this.isColumnLocked(column.value), 'dragable': pressed}" (click)="sortColumn(column, i)"
                
                 [ngStyle]="{'max-width.px': column.width ? column.width : 'auto', 'min-width.px': column.width ? column.width : 'auto'}">
                 <div class="column-name" [title]="column.label"><span class="col-name">{{column.label}}</span>

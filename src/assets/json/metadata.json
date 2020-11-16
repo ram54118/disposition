@@ -7,102 +7,122 @@
   {
     "value": "DISPOSITION_STATUS_ID",
     "label": "Action",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Client",
     "value": "CLIENT_NAME",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Protocol",
     "value": "PROTOCOL",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Facility",
     "value": "FACILITY_NAME",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Part ID",
     "value": "COMPONENT_CODE",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Client Part ID",
     "value": "CLIENT_PRODUCT_ID",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Description (unblinded)",
     "value": "COMPONENT_DESCRIPTION",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Lot ID (Manufacturer)",
     "value": "MANUFACTURERS_LOT_NUMBER",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Lot ID (Client)",
     "value": "CLIENT_LOT_NUMBER",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Expiry Date",
     "value": "BATCH_EXPIRATION_DATE",
-    "type": "date"
+    "type": "date",
+    "sort": -1
   },
   {
     "label": "Receipt ID",
     "value": "RECEIPT_CODE",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Box ID",
     "value": "BOX_CODE",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Client Container ID",
     "value": "CLIENT_CONTAINER_NUMBER",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Lot Status",
     "value": "BATCH_STATUS",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Box Status",
     "value": "INVENTORY_STATUS",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Quantity",
     "value": "QUANTITY",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Unit of Measure",
     "value": "UOM",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Sample Type",
     "value": "SAMPLE_TYPE",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Warehouse",
     "value": "WAREHOUSE_NAME",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   },
   {
     "label": "Location",
     "value": "STORAGE_LOCATION",
-    "type": "string"
+    "type": "string",
+    "sort": -1
   }
   ],
   "rowsPerScreen":10

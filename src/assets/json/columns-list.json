@@ -1,0 +1,100 @@
+{
+    "success": true,
+    "result": [
+        {
+            "REPORT_UI_COLUMN_ID": 79,
+            "REPORT_COLUMN_NAME": "PROTOCOL",
+            "COLUMN_DESCRIPTION": "Protocol"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 81,
+            "REPORT_COLUMN_NAME": "CLIENT_LOT_NUMBER",
+            "COLUMN_DESCRIPTION": "Lot ID (Client)"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 83,
+            "REPORT_COLUMN_NAME": "STORAGE_LOCATION",
+            "COLUMN_DESCRIPTION": "Location"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 84,
+            "REPORT_COLUMN_NAME": "FACILITY_NAME",
+            "COLUMN_DESCRIPTION": "Facility"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 85,
+            "REPORT_COLUMN_NAME": "MANUFACTURERS_LOT_NUMBER",
+            "COLUMN_DESCRIPTION": "Lot ID (Manufacturer)"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 86,
+            "REPORT_COLUMN_NAME": "WAREHOUSE_NAME",
+            "COLUMN_DESCRIPTION": "Warehouse"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 87,
+            "REPORT_COLUMN_NAME": "SAMPLE_TYPE",
+            "COLUMN_DESCRIPTION": "Sample Type"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 88,
+            "REPORT_COLUMN_NAME": "UOM",
+            "COLUMN_DESCRIPTION": "Unit of Measure"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 89,
+            "REPORT_COLUMN_NAME": "QUANTITY",
+            "COLUMN_DESCRIPTION": "Quantity"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 90,
+            "REPORT_COLUMN_NAME": "CLIENT_NAME",
+            "COLUMN_DESCRIPTION": "Client"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 91,
+            "REPORT_COLUMN_NAME": "INVENTORY_STATUS",
+            "COLUMN_DESCRIPTION": "Box Status"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 92,
+            "REPORT_COLUMN_NAME": "BATCH_STATUS",
+            "COLUMN_DESCRIPTION": "Lot Status"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 93,
+            "REPORT_COLUMN_NAME": "RECEIPT_CODE",
+            "COLUMN_DESCRIPTION": "Receipt ID"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 94,
+            "REPORT_COLUMN_NAME": "BOX_CODE",
+            "COLUMN_DESCRIPTION": "Box ID"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 95,
+            "REPORT_COLUMN_NAME": "COMPONENT_CODE",
+            "COLUMN_DESCRIPTION": "Part ID"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 96,
+            "REPORT_COLUMN_NAME": "COMPONENT_DESCRIPTION",
+            "COLUMN_DESCRIPTION": "Description (unblinded)"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 97,
+            "REPORT_COLUMN_NAME": "CLIENT_CONTAINER_NUMBER",
+            "COLUMN_DESCRIPTION": "Client Container ID"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 98,
+            "REPORT_COLUMN_NAME": "BATCH_EXPIRATION_DATE",
+            "COLUMN_DESCRIPTION": "Expiry Date"
+        },
+        {
+            "REPORT_UI_COLUMN_ID": 105,
+            "REPORT_COLUMN_NAME": "CLIENT_PRODUCT_ID",
+            "COLUMN_DESCRIPTION": "Client Part ID"
+        }
+    ]
+}

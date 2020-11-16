@@ -8,117 +8,11 @@ import { ReportModalComponent } from '../report-modal/report-modal.component';
 import { InventoryService } from './../../core/services/inventory.service';
 import { Inventory } from './../../models/inventory';
 import { InformationModalComponent } from './../information-modal/information-modal.component';
-import * as $ from 'jquery';// import Jquery here
+import * as $ from 'jquery'; // import Jquery here
 import { cloneDeep, orderBy } from 'lodash';
 import { DatePipe } from '@angular/common';
+import { InventoryHelperService } from 'src/app/core/services/inventory-helper.service';
 
-const columnsList = [
-  {
-    value: 'check_box',
-    label: ''
-  },
-  {
-    value: 'DISPOSITION_STATUS_ID',
-    label: 'Action',
-    type: 'string'
-  },
-  {
-    label: 'Client',
-    value: 'CLIENT_NAME',
-    type: 'string'
-  },
-  {
-    label: 'Protocol',
-    value: 'PROTOCOL',
-    type: 'string'
-  },
-  {
-    label: 'Facility',
-    value: 'FACILITY_NAME',
-    type: 'string'
-  },
-  {
-    label: 'Part ID',
-    value: 'COMPONENT_CODE',
-    type: 'string'
-  },
-  {
-    label: 'Client Part ID',
-    value: 'CLIENT_PRODUCT_ID',
-    type: 'string'
-  },
-  {
-    label: 'Description (unblinded)',
-    value: 'COMPONENT_DESCRIPTION',
-    type: 'string'
-  },
-  {
-    label: 'Lot ID (Manufacturer)',
-    value: 'MANUFACTURERS_LOT_NUMBER',
-    type: 'string'
-  },
-  {
-    label: 'Lot ID (Client)',
-    value: 'CLIENT_LOT_NUMBER',
-    type: 'string'
-  },
-  {
-    label: 'Expiry Date',
-    value: 'BATCH_EXPIRATION_DATE',
-    type: 'date'
-  },
-  {
-    label: 'Receipt ID',
-    value: 'RECEIPT_CODE',
-    type: 'string'
-  },
-  {
-    label: 'Box ID',
-    value: 'BOX_CODE',
-    type: 'string'
-  },
-  {
-    label: 'Client Container ID',
-    value: 'CLIENT_CONTAINER_NUMBER',
-    type: 'string'
-  },
-  {
-    label: 'Lot Status',
-    value: 'BATCH_STATUS',
-    type: 'string'
-  },
-  {
-    label: 'Box Status',
-    value: 'INVENTORY_STATUS',
-    type: 'string'
-  },
-  {
-    label: 'Quantity',
-    value: 'QUANTITY',
-    type: 'string'
-  },
-
-  {
-    label: 'Unit of Measure',
-    value: 'UOM',
-    type: 'string'
-  },
-  {
-    label: 'Sample Type',
-    value: 'SAMPLE_TYPE',
-    type: 'string'
-  },
-  {
-    label: 'Warehouse',
-    value: 'WAREHOUSE_NAME',
-    type: 'string'
-  },
-  {
-    label: 'Location',
-    value: 'STORAGE_LOCATION',
-    type: 'string'
-  },
-];
 
 enum LockStates {
   ACTIVATE_LOCK = 'ACTIVATE_LOCK',
@@ -134,7 +28,7 @@ const mainDomOccupiedHeight = 50;
 })
 export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   public selectedInventoryType: string;
-  public columnsList: { label: string, value: string, sort?: boolean, type?: any, width?: any }[];
+  public columnsList: { label: string, value: string, sort?: boolean, type?: any, width?: any, id?: string }[];
   public selectedColumn: string;
   public selectedDisposition: string;
   private subscriptions$ = new Subject<void>();
@@ -143,8 +37,8 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   public dispositionTypes;
   public recordsPerScreenOptions = [5, 10, 15, 20, 25, 30];
   public recordsPerScreen = 5;
-  public lockedColumns: { label: string, value: string, sort?: boolean }[] = [];
-  public unLockedColumns: { label: string, value: string, sort?: boolean }[] = [];
+  public lockedColumns: { label: string, value: string, sort?: boolean, id?: string }[] = [];
+  public unLockedColumns: { label: string, value: string, sort?: boolean, id?: string }[] = [];
   public lockLable = 'Activate lock';
   public lockState: LockStates = LockStates.ACTIVATE_LOCK;
   public currentPage = 1;
@@ -177,15 +71,15 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   pressed: boolean;
   startX: any;
   startWidth: any;
-  isInitSet: boolean = false;
-  isColumnResized: boolean = false;
+  isInitSet = false;
+  isColumnResized = false;
   allTdWidth = [];
   onMouseDownIndex = -1;
   bgColorWidth = 0;
   @ViewChild('searchFilter', { static: false }) searchFilter;
   @ViewChild('inventoryTable', { static: false }) public inventoryTable: any;
   constructor(private ngZone: NgZone, private inventoryService: InventoryService,
-    private modalService: BsModalService, private activatedRoute: ActivatedRoute,
+    private modalService: BsModalService, private activatedRoute: ActivatedRoute, private InventoryHelperService: InventoryHelperService,
     public renderer: Renderer2, private loaderService: LoaderService, private datePipe: DatePipe) { }
   ngOnInit() {
     this.inventoryService.getAssetCredentials().subscribe(data => {
@@ -250,12 +144,17 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private getMetaData() {
-    return this.inventoryService.getMetaData().pipe(
+    return this.InventoryHelperService.getColumnsList().pipe(
       tap(response => {
-        this.columnsList = response && response.columnsList ? response.columnsList : columnsList;
-        this.recordsPerScreen = response && response.recordsPerScreen ? response.recordsPerScreen : 5;
-      }
-    ));
+        console.log(response);
+        this.columnsList = response.columnsList;
+        this.recordsPerScreen = response.recordsPerScreen || 5;
+        if (response.freezePosition) {
+          this.lockState = LockStates.UN_LOCK;
+          this.lockLable = 'Unlock';
+          this.lockedColumns = this.columnsList.slice(0, response.freezePosition);
+        }
+      }));
   }
 
   getInventoryListCount() {
@@ -276,8 +175,8 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   saveMetaData() {
-    const data = {columnsList : this.columnsList, recordsPerScreen: this.recordsPerScreen};
-    console.log(data);
+    const data = { columnsList: this.columnsList, recordsPerScreen: this.recordsPerScreen, lockedColumns: this.lockedColumns };
+    this.InventoryHelperService.savePersonData(data);
   }
 
   getTotalRecords(): Observable<any> {
@@ -291,24 +190,25 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       map((response: any) => response.map(r => r.result.data.getDispositionDetOutput)),
       tap(response => {
         response[0].forEach((inv) => {
-          inv['BATCH_EXPIRATION_DATE'] = inv['BATCH_EXPIRATION_DATE'] ?
-            this.datePipe.transform(new Date(inv['BATCH_EXPIRATION_DATE']), 'd/MMM/yyyy') : inv['BATCH_EXPIRATION_DATE']
+          inv.BATCH_EXPIRATION_DATE = inv.BATCH_EXPIRATION_DATE ?
+            this.datePipe.transform(new Date(inv.BATCH_EXPIRATION_DATE), 'd/MMM/yyyy') : inv.BATCH_EXPIRATION_DATE
         });
         const remainIngList = response.flat(1);
         this.totalinventoryList = cloneDeep(remainIngList);
         this.paginationRecords = cloneDeep(this.totalinventoryList);
         this.getCategories(true);
-        this.loadingInBackground = false;
         this.inventoryList = cloneDeep(this.totalinventoryList.slice(0, this.recordsPerScreen));
         this.addLeftPsotionstoTable();
 
         this.goToPage = 1;
         this.calculatePaginatorPoints();
         this.plsSaveYourChanges();
+        const sortedColumns = this.columnsList.filter(col => col.hasOwnProperty('sort'));
+        sortedColumns.forEach(col => this.sortColumn(col));
         setTimeout(() => {
           this.moveColumns();
         });
-
+        this.loadingInBackground = false;
       })
     );
   }
@@ -636,19 +536,16 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         let left = 0;
         for (let i = 0; i <= headers.length - 1; i++) {
           const element = headers[i];
-          let colName = element.innerText.trim().toLowerCase().replace('keyboard_arrow_up', '');
-          colName = colName.replace('keyboard_arrow_down', '');
-          colName = colName.replace('\n', '');
-          if (this.lockedColumns.find(col => col.label && col.label.trim().toLowerCase().includes(colName))) {
-            element.style.left = this.lockState === LockStates.ACTIVATE_LOCK ? 'auto' : (left - 1) + 'px';
-
+          const colId = element.dataset.columId;
+          if (this.lockedColumns.length && (!colId || this.lockedColumns.find(col => col.id == colId))) {
+            element.style.left = this.lockState === LockStates.ACTIVATE_LOCK || this.lockState === LockStates.LOCK_ACTIVATED ? 'auto' : (left - 1) + 'px';
             for (let j = i; j < data.length; j += headers.length) {
               const td = data[j];
-              td.style.left = this.lockState === LockStates.ACTIVATE_LOCK ? 'auto' : (left - 1) + 'px';
+              td.style.left = this.lockState === LockStates.ACTIVATE_LOCK || this.lockState === LockStates.LOCK_ACTIVATED ? 'auto' : (left - 1) + 'px';
             }
           }
 
-          // console.log('colName', colName);
+
           left += headers[i].offsetWidth;
         }
       }
@@ -664,7 +561,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.subscriptions$.complete();
   }
 
-  sortColumn(column: any, index: number, event: any) {
+  sortColumn(column: any, index?: number) {
     if (this.isColumnResized) {
       this.isColumnResized = false;
       return;
@@ -673,11 +570,11 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       if (column.label !== 'Action') {
         column.sort = column.sort ? false : true;
         switch (column.type) {
-          case ('string'):
-            this.paginationRecords = orderBy(this.paginationRecords, (o) => {
-              return o[column.value];
-            }, column.sort ? 'desc' : 'asc');
-            break;
+          // case ('string'):
+          //   this.paginationRecords = orderBy(this.paginationRecords, (o) => {
+          //     return o[column.value];
+          //   }, column.sort ? 'desc' : 'asc');
+          //   break;
           case ('date'):
             this.paginationRecords = orderBy(this.paginationRecords, (o) => {
               return new Date(o[column.value]);
@@ -696,13 +593,14 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     } else {
       this.lockOrUnLockColumn(index);
     }
-
-    const col = this.columnsList[index];
-    const thEle = $('.table tr th:nth-child(' + (index + 1) + ')');
-    const maxWidth = thEle.css('max-width');
-    if (maxWidth && maxWidth != 'none') {
-      const width = parseInt(maxWidth.replace(/[^0-9]/g, ''));
-      col['width'] = width;
+    if (index) {
+      const col = this.columnsList[index];
+      const thEle = $('.table tr th:nth-child(' + (index + 1) + ')');
+      const maxWidth = thEle.css('max-width');
+      if (maxWidth && maxWidth != 'none') {
+        const width = parseInt(maxWidth.replace(/[^0-9]/g, ''));
+        col.width = width;
+      }
     }
   }
 
@@ -834,7 +732,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     setTimeout(() => {
       const spinner = document.querySelector('.spinner') as HTMLElement;
       spinner.style.top = this.getScrollPosition() + 'px';
-      //this.showOrHideModalBackDrop(true);
+      // this.showOrHideModalBackDrop(true);
     });
     const element = parent.document.getElementsByClassName('goBackToReport');
     const firstElement = element[0] as HTMLElement;
@@ -929,12 +827,12 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     width = width < 1 ? 1 : width;
     const thEle = $(this.start).parent();
     thEle.css({ 'min-width': width, 'max-width': width });
-    thEle.find("div.column-name").css({ 'width': width - 8 });
-    let i = $(this.start).parent().index() + 1;
+    thEle.find('div.column-name').css({ width: width - 8 });
+    const i = $(this.start).parent().index() + 1;
     $('.table tr td:nth-child(' + i + ')').css({ 'min-width': width, 'max-width': width });
-    $('.table tr td:nth-child(' + i + ')').find("div.col-value").css({ 'width': width - 15 });
+    $('.table tr td:nth-child(' + i + ')').find('div.col-value').css({ width: width - 15 });
     this.isColumnResized = true;
-    this.columnsList[this.onMouseDownIndex]['width'] = width;
+    this.columnsList[this.onMouseDownIndex].width = width;
     if (this.lockedColumns.length > 0 && this.lockState !== LockStates.LOCK_ACTIVATED) {
       this.addLeftPsotionstoTable();
     }
@@ -947,9 +845,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     // const columnNames = $table.find('thead tr .column-name');
     const options = {
       drag: true,
-      dragClass: "drag",
-      movedContainerSelector: ".move-column",
-      overClass: "over",
+      dragClass: 'drag',
+      movedContainerSelector: '.move-column',
+      overClass: 'over',
       onDragEnd: ''
     };
     let dragSrcEl;
@@ -1031,7 +929,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       const col = _this.columnsList[fromIndex];
       _this.columnsList.splice(fromIndex, 1);
       _this.columnsList.splice(toIndex, 0, col);
-     // _this.initResizableColumns();
+      // _this.initResizableColumns();
     }
   }
 
@@ -1050,7 +948,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     const tableElement = this.inventoryTable ? this.inventoryTable.nativeElement : undefined;
     for (let i = 0; i < this.columnsList.length; i++) {
       if (this.columnsList[i].width) {
-        delete this.columnsList[i]['width'];
+        delete this.columnsList[i].width;
       }
     }
     const headers = tableElement ? tableElement.querySelectorAll('th') : undefined;
@@ -1085,7 +983,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         const scrollPosition = this.getScrollPosition();
         const modals = document.querySelectorAll('.modal') as any;
         if (modals && modals.length) {
-          modals.forEach(modal => modal.style['top'] = scrollPosition + "px")
+          modals.forEach(modal => modal.style.top = scrollPosition + 'px');
         }
       } else {
         iFrame.style['z-index'] = 9;

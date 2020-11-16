@@ -1,0 +1,57 @@
+{
+  "USER_PERSON_DATA": [
+    {
+      "UI_TYPE": "COLUMN",
+      "UI_ACTION_NAME": "VISIBLE",
+      "ID_VALUE": {}
+    },
+    {
+      "UI_TYPE": "COLUMN",
+      "UI_ACTION_NAME": "ORDER",
+      "ID_VALUE": {
+        "79": "5",
+        "81": "3",
+        "83": "2",
+        "84": "4",
+        "85": "6",
+        "86": "7",
+        "87": "8",
+        "88": "9",
+        "89": "10",
+        "90": "11",
+        "91": "12",
+        "92": "13",
+        "93": "14",
+        "94": "15",
+        "95": "16",
+        "96": "17",
+        "97": "18",
+        "98": "19",
+        "105": "20"
+      }
+    },
+    {
+      "UI_TYPE": "COLUMN",
+      "UI_ACTION_NAME": "FREEZE",
+      "ID_VALUE": {
+        "85": "6",
+        "79": "5"
+      }
+    },
+    {
+      "UI_TYPE": "COLUMN",
+      "UI_ACTION_NAME": "SORT",
+      "ID_VALUE": {
+        "BOX_CODE": true,
+        "RECEIPT_CODE": false
+      }
+    },
+    {
+      "UI_TYPE": "ROWS",
+      "UI_ACTION_NAME": "ROWS",
+      "ID_VALUE": {
+        "INVENTORY_TABLE": "5"
+      }
+    }
+  ]
+}
