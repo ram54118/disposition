@@ -21,4 +21,24 @@ export class ServerProxyService {
   setBaseUrl(baseUrl: string) {
     this.baseUrl = baseUrl;
   }
+
+  getPersonalizedData(userId, url) {
+    const headers: HttpHeaders = new HttpHeaders();
+    headers.append('userId', userId);
+    headers.append('moduleId', '5');
+    headers.append('Sub moduleId', '1');
+    headers.append('Operation', 'R');
+    headers.append('input_personlization_json_clobe', null);
+    return this.http.get(this.baseUrl + url, { headers });
+  }
+
+  savePersonalizedData(userId, url, personalizedData) {
+    const headers: HttpHeaders = new HttpHeaders();
+    headers.append('userId', userId);
+    headers.append('moduleId', '5');
+    headers.append('Sub moduleId', '1');
+    headers.append('Operation', 'R');
+    headers.append('input_personlization_json_clobe', personalizedData);
+    return this.http.get(this.baseUrl + url, { headers });
+  }
 }

@@ -853,13 +853,15 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     let dragSrcEl;
     let dragSrcEnter;
     [].forEach.call(cols, (col) => {
-      col.setAttribute('draggable', true);
-      $(col).on('dragstart', handleDragStart);
-      $(col).on('dragenter', handleDragEnter);
-      $(col).on('dragover', handleDragOver);
-      $(col).on('dragleave', handleDragLeave);
-      $(col).on('drop', handleDrop);
-      $(col).on('dragend', handleDragEnd);
+      if (col.dataset.columId) {
+        col.setAttribute('draggable', true);
+        $(col).on('dragstart', handleDragStart);
+        $(col).on('dragenter', handleDragEnter);
+        $(col).on('dragover', handleDragOver);
+        $(col).on('dragleave', handleDragLeave);
+        $(col).on('drop', handleDrop);
+        $(col).on('dragend', handleDragEnd);
+      }
     });
 
     function handleDragStart(e) {

@@ -11,7 +11,7 @@ import { ServerProxyService } from './server-proxy.service';
 export class InventoryHelperService {
   constructor(private serverProxyService: ServerProxyService, private http: HttpClient) { }
   getMetaData(queryParams) {
-    return forkJoin([this.getColumns(), this.getPeronalizedData()]).pipe(
+    return forkJoin([this.getColumns(), this.getPeronalizedData(queryParams)]).pipe(
       map(response => this.getPeronalizedColumns(response))
     );
   }
@@ -129,11 +129,10 @@ export class InventoryHelperService {
     // return this.serverProxyService.get(url);
     return this.http.get(url);
   }
-  private getPeronalizedData() {
+  private getPeronalizedData(queryParams) {
     const url = 'assets/json/USER_PERSON_DATA.json';
-    // const url = "";
-    // return this.serverProxyService.get(url);
     return this.http.get(url);
+    // return this.serverProxyService.getPersonalizedData(queryParams.USER_ID, url);
   }
 
   public savePersonalizedData(peronData, queryParams) {
@@ -170,5 +169,7 @@ export class InventoryHelperService {
     };
 
     console.log(personalizedData);
+    const url = 'assets/json/USER_PERSON_DATA.json';
+    this.serverProxyService.savePersonalizedData(queryParams.USER_ID, url, personalizedData);
   }
 }
