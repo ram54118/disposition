@@ -10,13 +10,13 @@ import { ServerProxyService } from './server-proxy.service';
 })
 export class InventoryHelperService {
   constructor(private serverProxyService: ServerProxyService, private http: HttpClient) { }
-  getColumnsList() {
-    return forkJoin([this.getColumns(), this.getPersonData()]).pipe(
-      map(response => this.getPeronalColumns(response))
+  getMetaData(queryParams) {
+    return forkJoin([this.getColumns(), this.getPeronalizedData()]).pipe(
+      map(response => this.getPeronalizedColumns(response))
     );
   }
 
-  private getPeronalColumns(response) {
+  private getPeronalizedColumns(response) {
     let recordsPerScreen = 5;
     let personalDataColumnOrder;
     let sortedColumns;
@@ -90,43 +90,7 @@ export class InventoryHelperService {
     return { columnsList, recordsPerScreen, freezePosition };
   }
 
-  public savePersonData(peronData) {
-    const personalData = {
-      USER_PERSON_DATA: [
-        {
-          UI_TYPE: 'COLUMN',
-          UI_ACTION_NAME: 'VISIBLE',
-          ID_VALUE: {}
-        },
-        {
-          UI_TYPE: 'COLUMN',
-          UI_ACTION_NAME: 'ORDER',
-          ID_VALUE: this.getColumnsOrder(peronData.columnsList)
-        },
-        {
-          UI_TYPE: 'COLUMN',
-          UI_ACTION_NAME: 'FREEZE',
-          ID_VALUE: {
-            // 18: '1'
-          }
-        },
-        {
-          UI_TYPE: 'COLUMN',
-          UI_ACTION_NAME: 'SORT',
-          ID_VALUE: this.getSortedColumns(peronData.columnsList)
-        },
-        {
-          UI_TYPE: 'ROWS',
-          UI_ACTION_NAME: 'ROWS',
-          ID_VALUE: {
-            INVENTORY_TABLE: peronData.recordsPerScreen
-          }
-        }
-      ]
-    };
 
-    console.log(personalData);
-  }
 
   private getColumnsOrder(columnsList) {
     const orderMap = {};
@@ -148,16 +112,63 @@ export class InventoryHelperService {
     return orderMap;
   }
 
+  private getFrozenColumns(columnsList, frozenColumns) {
+    const columnMap = {};
+    frozenColumns.forEach(frozenCol => {
+      if (frozenCol.id) {
+        const colIndex = columnsList.findIndex((col) => frozenCol.id === col.id);
+        columnMap[frozenCol.id] = colIndex;
+      }
+    });
+    return columnMap;
+  }
+
   private getColumns() {
     const url = 'assets/json/columns-list.json';
     // const url = "";
     // return this.serverProxyService.get(url);
     return this.http.get(url);
   }
-  private getPersonData() {
+  private getPeronalizedData() {
     const url = 'assets/json/USER_PERSON_DATA.json';
     // const url = "";
     // return this.serverProxyService.get(url);
     return this.http.get(url);
+  }
+
+  public savePersonalizedData(peronData, queryParams) {
+    const personalizedData = {
+      USER_PERSON_DATA: [
+        {
+          UI_TYPE: 'COLUMN',
+          UI_ACTION_NAME: 'VISIBLE',
+          ID_VALUE: {}
+        },
+        {
+          UI_TYPE: 'COLUMN',
+          UI_ACTION_NAME: 'ORDER',
+          ID_VALUE: this.getColumnsOrder(peronData.columnsList)
+        },
+        {
+          UI_TYPE: 'COLUMN',
+          UI_ACTION_NAME: 'FREEZE',
+          ID_VALUE: this.getFrozenColumns(peronData.columnsList, peronData.lockedColumns)
+        },
+        {
+          UI_TYPE: 'COLUMN',
+          UI_ACTION_NAME: 'SORT',
+          ID_VALUE: this.getSortedColumns(peronData.columnsList)
+        },
+        {
+          UI_TYPE: 'ROWS',
+          UI_ACTION_NAME: 'ROWS',
+          ID_VALUE: {
+            INVENTORY_TABLE: peronData.recordsPerScreen
+          }
+        }
+      ]
+    };
+
+    console.log(personalizedData);
   }
 }

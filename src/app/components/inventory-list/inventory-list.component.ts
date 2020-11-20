@@ -144,7 +144,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private getMetaData() {
-    return this.InventoryHelperService.getColumnsList().pipe(
+    return this.InventoryHelperService.getMetaData(this.queryParams).pipe(
       tap(response => {
         console.log(response);
         this.columnsList = response.columnsList;
@@ -174,9 +174,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     );
   }
 
-  saveMetaData() {
-    const data = { columnsList: this.columnsList, recordsPerScreen: this.recordsPerScreen, lockedColumns: this.lockedColumns };
-    this.InventoryHelperService.savePersonData(data);
+  savePersonalizedData() {
+    const personalizedData = { columnsList: this.columnsList, recordsPerScreen: this.recordsPerScreen, lockedColumns: this.lockedColumns };
+    this.InventoryHelperService.savePersonalizedData(personalizedData, this.queryParams);
   }
 
   getTotalRecords(): Observable<any> {
