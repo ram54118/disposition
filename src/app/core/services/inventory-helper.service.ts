@@ -32,7 +32,7 @@ export class InventoryHelperService {
         label: 'Action',
       }
     ];
-    const columns = response[0].result;
+    const columns = response[0].result.GetReportUIColumns;
     const personalData = response[1].USER_PERSON_DATA;
     personalData.forEach(action => {
       if (action.UI_ACTION_NAME === 'ORDER') {
@@ -87,6 +87,7 @@ export class InventoryHelperService {
         }
       }
     }
+    freezePosition = freezePosition ? freezePosition + 1 : freezePosition
     return { columnsList, recordsPerScreen, freezePosition };
   }
 
@@ -124,15 +125,16 @@ export class InventoryHelperService {
   }
 
   private getColumns() {
-    const url = 'assets/json/columns-list.json';
+    const url = 'inventoryReportUIColumns/get?report_type_id=10002';
     // const url = "";
     // return this.serverProxyService.get(url);
-    return this.http.get(url);
+    return this.serverProxyService.get(url);
   }
   private getPeronalizedData(queryParams) {
-    const url = 'assets/json/USER_PERSON_DATA.json';
-    return this.http.get(url);
-    // return this.serverProxyService.getPersonalizedData(queryParams.USER_ID, url);
+    // const url = 'assets/json/USER_PERSON_DATA.json';
+    // return this.http.get(url);
+    const url = 'personalization/get';
+    return this.serverProxyService.getPersonalizedData(queryParams.USER_ID, url);
   }
 
   public savePersonalizedData(peronData, queryParams) {
@@ -169,7 +171,11 @@ export class InventoryHelperService {
     };
 
     console.log(personalizedData);
-    const url = 'assets/json/USER_PERSON_DATA.json';
-    this.serverProxyService.savePersonalizedData(queryParams.USER_ID, url, personalizedData);
+    const url = 'personalization/set';
+    this.serverProxyService.savePersonalizedData(queryParams.USER_ID, url, personalizedData).subscribe(
+      response => {
+        alert('Save Success')
+      }
+    );
   }
 }
