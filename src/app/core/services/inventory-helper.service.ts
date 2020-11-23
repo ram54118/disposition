@@ -169,13 +169,7 @@ export class InventoryHelperService {
         }
       ]
     };
-
-    console.log(personalizedData);
     const url = 'personalization/set';
-    this.serverProxyService.savePersonalizedData(queryParams.USER_ID, url, personalizedData).subscribe(
-      response => {
-        alert('Save Success')
-      }
-    );
+    return this.serverProxyService.savePersonalizedData(queryParams.USER_ID, url, personalizedData);
   }
 }

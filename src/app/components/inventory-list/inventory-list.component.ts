@@ -46,6 +46,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   public noOfPages = 0;
   public startIndex = 0;
   public endIndex = 0;
+  private columnsListCopy;
   showCompleteBtn: boolean;
   bsModalRef: BsModalRef;
   states = LockStates;
@@ -148,6 +149,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       tap(response => {
         console.log(response);
         this.columnsList = response.columnsList;
+        this.columnsListCopy = cloneDeep(response.columnsList);
         this.recordsPerScreen = response.recordsPerScreen || 5;
         if (response.freezePosition) {
           this.lockState = LockStates.UN_LOCK;
@@ -176,7 +178,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
   savePersonalizedData() {
     const personalizedData = { columnsList: this.columnsList, recordsPerScreen: this.recordsPerScreen, lockedColumns: this.lockedColumns };
-    this.InventoryHelperService.savePersonalizedData(personalizedData, this.queryParams);
+    this.InventoryHelperService.savePersonalizedData(personalizedData, this.queryParams).subscribe(res => {
+      this.showInfoModal('Information', ['Personalized information saved']);
+    });
   }
 
   getTotalRecords(): Observable<any> {
@@ -382,6 +386,10 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.resetFilters();
     this.paginationRecords.forEach(inventory => inventory.isSelect = false);
     this.inventoryList.forEach(inventory => inventory.isSelect = false);
+    this.columnsList = cloneDeep(this.columnsListCopy);
+    setTimeout(() => {
+      this.moveColumns();
+    });
   }
 
   resetFilters() {
@@ -842,7 +850,6 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     let _this = this;
     const $table = $('#inv-table');
     const cols = $table.find('thead tr th');
-    // const columnNames = $table.find('thead tr .column-name');
     const options = {
       drag: true,
       dragClass: 'drag',
@@ -853,21 +860,19 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     let dragSrcEl;
     let dragSrcEnter;
     [].forEach.call(cols, (col) => {
-      if (col.dataset.columId) {
-        col.setAttribute('draggable', true);
-        $(col).on('dragstart', handleDragStart);
-        $(col).on('dragenter', handleDragEnter);
-        $(col).on('dragover', handleDragOver);
-        $(col).on('dragleave', handleDragLeave);
-        $(col).on('drop', handleDrop);
-        $(col).on('dragend', handleDragEnd);
-      }
+      col.setAttribute('draggable', true);
+      $(col).on('dragstart', handleDragStart);
+      $(col).on('dragenter', handleDragEnter);
+      $(col).on('dragover', handleDragOver);
+      $(col).on('dragleave', handleDragLeave);
+      $(col).on('drop', handleDrop);
+      $(col).on('dragend', handleDragEnd);
     });
 
     function handleDragStart(e) {
 
       $(e.target).addClass(options.dragClass);
-      dragSrcEl = e.target;
+      dragSrcEl = e.currentTarget;
       e.originalEvent.dataTransfer.effectAllowed = 'copy';
       e.originalEvent.dataTransfer.setData('text/html', e.target.id);
     }
@@ -920,18 +925,20 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     }
 
     function copyColumns(fromIndex, toIndex) {
-      const rows = $table.find(options.movedContainerSelector);
-      for (let i = 0; i < rows.length; i++) {
-        if (toIndex > fromIndex) {
-          insertAfter(rows[i].children[fromIndex], rows[i].children[toIndex]);
-        } else if (toIndex < $table.find('thead tr th').length - 1) {
-          rows[i].insertBefore(rows[i].children[fromIndex], rows[i].children[toIndex]);
+      if (fromIndex >= 2) {
+        const rows = $table.find(options.movedContainerSelector);
+        for (let i = 0; i < rows.length; i++) {
+          if (toIndex > fromIndex) {
+            insertAfter(rows[i].children[fromIndex], rows[i].children[toIndex]);
+          } else if (toIndex < $table.find('thead tr th').length - 1) {
+            rows[i].insertBefore(rows[i].children[fromIndex], rows[i].children[toIndex]);
+          }
         }
+        const col = _this.columnsList[fromIndex];
+        _this.columnsList.splice(fromIndex, 1);
+        _this.columnsList.splice(toIndex, 0, col);
+        // _this.initResizableColumns();
       }
-      const col = _this.columnsList[fromIndex];
-      _this.columnsList.splice(fromIndex, 1);
-      _this.columnsList.splice(toIndex, 0, col);
-      // _this.initResizableColumns();
     }
   }
 
