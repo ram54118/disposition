@@ -925,7 +925,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     }
 
     function copyColumns(fromIndex, toIndex) {
-      if (fromIndex >= 2) {
+      if (fromIndex >= 2 && toIndex >= 2) {
         const rows = $table.find(options.movedContainerSelector);
         for (let i = 0; i < rows.length; i++) {
           if (toIndex > fromIndex) {
