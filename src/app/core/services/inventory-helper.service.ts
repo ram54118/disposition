@@ -87,7 +87,7 @@ export class InventoryHelperService {
         }
       }
     }
-    freezePosition = freezePosition ? freezePosition + 1 : freezePosition
+    freezePosition = freezePosition ? freezePosition + 1 : freezePosition;
     return { columnsList, recordsPerScreen, freezePosition };
   }
 

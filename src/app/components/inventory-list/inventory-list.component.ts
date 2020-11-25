@@ -46,7 +46,6 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   public noOfPages = 0;
   public startIndex = 0;
   public endIndex = 0;
-  private columnsListCopy;
   showCompleteBtn: boolean;
   bsModalRef: BsModalRef;
   states = LockStates;
@@ -77,6 +76,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   allTdWidth = [];
   onMouseDownIndex = -1;
   bgColorWidth = 0;
+  personalizedDataCopy;
   @ViewChild('searchFilter', { static: false }) searchFilter;
   @ViewChild('inventoryTable', { static: false }) public inventoryTable: any;
   constructor(private ngZone: NgZone, private inventoryService: InventoryService,
@@ -147,16 +147,26 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   private getMetaData() {
     return this.InventoryHelperService.getMetaData(this.queryParams).pipe(
       tap(response => {
-        console.log(response);
-        this.columnsList = response.columnsList;
-        this.columnsListCopy = cloneDeep(response.columnsList);
-        this.recordsPerScreen = response.recordsPerScreen || 5;
-        if (response.freezePosition) {
-          this.lockState = LockStates.UN_LOCK;
-          this.lockLable = 'Unlock';
-          this.lockedColumns = this.columnsList.slice(0, response.freezePosition);
-        }
+        this.personalizedDataCopy = response;
+        this.loadPersonalizedData();
       }));
+  }
+
+  loadPersonalizedData() {
+    this.columnsList = cloneDeep(this.personalizedDataCopy.columnsList);
+    this.recordsPerScreen = this.personalizedDataCopy.recordsPerScreen || 5;
+    if (this.personalizedDataCopy.freezePosition) {
+      this.lockState = LockStates.UN_LOCK;
+      this.lockLable = 'Unlock';
+      this.lockedColumns = this.columnsList.slice(0, this.personalizedDataCopy.freezePosition);
+    } else if (this.personalizedDataCopy.lockedColumns && this.personalizedDataCopy.lockedColumns.length) {
+      this.lockState = LockStates.UN_LOCK;
+      this.lockLable = 'Unlock';
+      this.lockedColumns = cloneDeep(this.personalizedDataCopy.lockedColumns);
+    } else {
+      this.lockState = LockStates.UN_LOCK;
+      this.lockedColumns = [];
+    }
   }
 
   getInventoryListCount() {
@@ -179,6 +189,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   savePersonalizedData() {
     const personalizedData = { columnsList: this.columnsList, recordsPerScreen: this.recordsPerScreen, lockedColumns: this.lockedColumns };
     this.InventoryHelperService.savePersonalizedData(personalizedData, this.queryParams).subscribe(res => {
+      this.personalizedDataCopy = personalizedData;
       this.showInfoModal('Information', ['Personalized information saved']);
     });
   }
@@ -372,13 +383,14 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   reset() {
+    this.loadPersonalizedData();
     this.removeWidthOfHeaders();
     this.storesList = cloneDeep(this.storesListCopy);
     this.returnsList = cloneDeep(this.returnsListCopy);
     this.destroyList = cloneDeep(this.destroyListCopy);
-    this.recordsPerScreen = 5;
-    this.lockState = LockStates.UN_LOCK;
-    this.changeLockState();
+    // this.recordsPerScreen = 5;
+    // this.lockState = LockStates.UN_LOCK;
+    // this.changeLockState();
     // this.getCategories();
     this.selectedInventoryList = [];
     this.showOnlyTableData(this.selectedInventoryType);
@@ -386,7 +398,6 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.resetFilters();
     this.paginationRecords.forEach(inventory => inventory.isSelect = false);
     this.inventoryList.forEach(inventory => inventory.isSelect = false);
-    this.columnsList = cloneDeep(this.columnsListCopy);
     setTimeout(() => {
       this.moveColumns();
     });
