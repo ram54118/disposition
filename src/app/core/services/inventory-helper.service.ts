@@ -1,22 +1,33 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { data } from 'jquery';
-import { Observable, of, forkJoin } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ServerProxyService } from './server-proxy.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class InventoryHelperService {
-  constructor(private serverProxyService: ServerProxyService, private http: HttpClient) { }
+  constructor(private serverProxyService: ServerProxyService) { }
   getMetaData(queryParams) {
-    return forkJoin([this.getColumns(), this.getPeronalizedData(queryParams)]).pipe(
-      map(response => this.getPeronalizedColumns(response))
+    return forkJoin([this.getColumns(), this.getPeronalizedData(queryParams), this.getBasicPersonalizedData()]).pipe(
+      map(response => this.getPersonalizedWithBasicData(response))
     );
   }
 
-  private getPeronalizedColumns(response) {
+  private getBasicPersonalizedData() {
+    const url = 'assets/json/USER_PERSON_DATA.json';
+    return this.serverProxyService.getJSON(url);
+  }
+
+  private getPersonalizedWithBasicData(response) {
+    return {
+      basic: this.getPeronalizedColumns(response[0], response[2]),
+      personalData: this.getPeronalizedColumns(response[0], response[1])
+    };
+  }
+
+  private getPeronalizedColumns(columnsInfo, data) {
     let recordsPerScreen = 5;
     let personalDataColumnOrder;
     let sortedColumns;
@@ -32,8 +43,8 @@ export class InventoryHelperService {
         label: 'Action',
       }
     ];
-    const columns = response[0].result.GetReportUIColumns;
-    const personalData = response[1].USER_PERSON_DATA;
+    const columns = columnsInfo.result.GetReportUIColumns;
+    const personalData = data.USER_PERSON_DATA;
     personalData.forEach(action => {
       if (action.UI_ACTION_NAME === 'ORDER') {
         personalDataColumnOrder = action.ID_VALUE;

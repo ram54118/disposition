@@ -53,8 +53,8 @@
       <div class="show-rows">
         <label for="sel1">Filter</label>
         <select class="form-control" [(ngModel)]="selectedColumn">
-          <ng-container *ngFor="let option of columnsList">
-            <option *ngIf="option && option.label !== 'Action'" [value]="option.value">{{option.label}}</option>
+          <ng-container *ngFor="let option of filterOptions">
+            <option [value]="option.value">{{option.label}}</option>
           </ng-container>
         </select>
         <input type="text" [disabled]="!selectedColumn" [(ngModel)]="searchValue" class="form-control mx-2"
@@ -64,6 +64,7 @@
       <a class="action-link" (click)="reset()">Reset</a>
       <a class="action-link" (click)="showAll($event)">Show All</a>
       <a class="action-link" (click)="savePersonalizedData()">Save Personalisation</a>
+      <a class="action-link" (click)="loadBasicPersonalizedData()">Clear Personalisation</a>
     </div>
   </div>
   <ng-container *ngIf="!loadingInBackground">

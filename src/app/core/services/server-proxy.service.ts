@@ -23,12 +23,16 @@ export class ServerProxyService {
   }
 
   getPersonalizedData(userId, url) {
-    url =  url + `?user_id=${userId}&module_id=4&sub_module_id=1` 
+    url = url + `?user_id=${userId}&module_id=4&sub_module_id=1`
     return this.http.get(this.baseUrl + url);
   }
 
   savePersonalizedData(userId, url, personalizedData) {
-    url = url + `?user_id=${userId}&module_id=4&sub_module_id=1` 
+    url = url + `?user_id=${userId}&module_id=4&sub_module_id=1`
     return this.http.post(this.baseUrl + url, personalizedData);
+  }
+
+  getJSON(url) {
+    return this.http.get(url);
   }
 }

@@ -46,6 +46,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   public noOfPages = 0;
   public startIndex = 0;
   public endIndex = 0;
+  filterOptions;
   showCompleteBtn: boolean;
   bsModalRef: BsModalRef;
   states = LockStates;
@@ -77,6 +78,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   onMouseDownIndex = -1;
   bgColorWidth = 0;
   personalizedDataCopy;
+  basicPersonalizedDataCopy;
   @ViewChild('searchFilter', { static: false }) searchFilter;
   @ViewChild('inventoryTable', { static: false }) public inventoryTable: any;
   constructor(private ngZone: NgZone, private inventoryService: InventoryService,
@@ -147,12 +149,19 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   private getMetaData() {
     return this.InventoryHelperService.getMetaData(this.queryParams).pipe(
       tap(response => {
-        this.personalizedDataCopy = response;
+        this.personalizedDataCopy = response.personalData;
+        this.basicPersonalizedDataCopy = response.basic;
         this.loadPersonalizedData();
       }));
   }
 
-  loadPersonalizedData() {
+  loadBasicPersonalizedData() {
+    this.personalizedDataCopy = cloneDeep(this.basicPersonalizedDataCopy);
+    this.loadPersonalizedData(true);
+    this.savePersonalizedData(true);
+  }
+
+  loadPersonalizedData(fromReset?: boolean) {
     this.columnsList = cloneDeep(this.personalizedDataCopy.columnsList);
     this.recordsPerScreen = this.personalizedDataCopy.recordsPerScreen || 5;
     if (this.personalizedDataCopy.freezePosition) {
@@ -166,6 +175,16 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     } else {
       this.lockState = LockStates.UN_LOCK;
       this.lockedColumns = [];
+    }
+    if (fromReset) {
+      // this.showOnlyTableData(this.selectedInventoryType, false, true);
+      this.getTableDataByType(this.selectedInventoryType, true);
+      this.calculatePaginatorPoints();
+      setTimeout(() => {
+        this.moveColumns();
+      });
+    } else {
+      this.filterOptions = this.columnsList.filter(col => col.label && col.label !== 'Action').map(col => ({ label: col.label, value: col.value }));
     }
   }
 
@@ -186,11 +205,13 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     );
   }
 
-  savePersonalizedData() {
+  savePersonalizedData(isBasicData?: boolean) {
     const personalizedData = { columnsList: this.columnsList, recordsPerScreen: this.recordsPerScreen, lockedColumns: this.lockedColumns };
     this.InventoryHelperService.savePersonalizedData(personalizedData, this.queryParams).subscribe(res => {
-      this.personalizedDataCopy = personalizedData;
-      this.showInfoModal('Information', ['Personalized information saved']);
+      if (!isBasicData) {
+        this.personalizedDataCopy = personalizedData;
+        this.showInfoModal('Information', ['Personalized information saved']);
+      }
     });
   }
 
@@ -275,6 +296,15 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
 
   tableRecordsChanged() {
+    if (this.inventoryList.length < Number(this.recordsPerScreen)) {
+      this.selectAll = false;
+    } else if (this.selectAll) {
+      const remainingList = cloneDeep(this.inventoryList.slice(this.recordsPerScreen));
+      remainingList.forEach((inv) => {
+        inv.isSelect = false;
+        this.selectInventory(inv, true);
+      });
+    }
     this.inventoryList = this.paginationRecords.slice(0, this.recordsPerScreen);
     this.addLeftPsotionstoTable();
     this.calculatePaginatorPoints();
@@ -323,14 +353,18 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-  selectInventory(inventory: Inventory) {
+  selectInventory(inventory: Inventory, ignoreSelectAll?: boolean) {
     if (inventory.isSelect) {
       this.selectedInventoryList.push(inventory);
-      this.selectAll = this.inventoryList.every(inv => inv.isSelect !== undefined && inv.isSelect === true);
+      if (!ignoreSelectAll) {
+        this.selectAll = this.inventoryList.every(inv => inv.isSelect !== undefined && inv.isSelect === true);
+      }
     } else {
       const inventoryIndex = this.selectedInventoryList.findIndex(selectedInventory => selectedInventory.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
       this.selectedInventoryList.splice(inventoryIndex, 1);
-      this.selectAll = false;
+      if (!ignoreSelectAll) {
+        this.selectAll = false;
+      }
     }
     const paginationRecord = this.paginationRecords.find(inv => inv.DISPOSITION_DETAIL_ID === inventory.DISPOSITION_DETAIL_ID);
     paginationRecord.isSelect = inventory.isSelect;
@@ -383,12 +417,12 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   reset() {
-    this.loadPersonalizedData();
+    this.loadPersonalizedData(true);
     this.removeWidthOfHeaders();
     this.storesList = cloneDeep(this.storesListCopy);
     this.returnsList = cloneDeep(this.returnsListCopy);
     this.destroyList = cloneDeep(this.destroyListCopy);
-    // this.recordsPerScreen = 5;
+    // this.recordsPerScreen = this.personalizedDataCopy.recordsPerScreen || 5;
     // this.lockState = LockStates.UN_LOCK;
     // this.changeLockState();
     // this.getCategories();
@@ -526,7 +560,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-  private getTableDataByType(type) {
+  private getTableDataByType(type, listByType?: boolean) {
     switch (type) {
       case ('store'):
         this.selectedInventoryType = 'store';
@@ -541,7 +575,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         this.paginationRecords = cloneDeep(this.destroyList);
         break;
       default:
-        this.showAll();
+        this.showAll(listByType);
     }
   }
 
