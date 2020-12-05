@@ -334,7 +334,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     }
     this.addLeftPsotionstoTable();
     this.calculatePaginatorPoints();
-    this.selectAll = this.inventoryList.every(inv => inv.isSelect !== undefined && inv.isSelect === true);
+    if (this.inventoryList && this.inventoryList.length) {
+      this.selectAll = this.inventoryList.every(inv => inv.isSelect !== undefined && inv.isSelect === true);
+    }
   }
 
   private getFilterTableDataByType(type) {
