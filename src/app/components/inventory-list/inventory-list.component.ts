@@ -94,8 +94,10 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         const iFrame: any = parent.document.querySelector('#right-content iframe');
         const containerHeight = document.querySelector('#main-container').clientHeight;
         if (iFrame && containerHeight !== this.previousHeight) {
+          const pullOutContainer: any = parent.document.querySelector('#pulloutContainer');
           this.previousHeight = containerHeight;
           iFrame.style.height = containerHeight + mainDomOccupiedHeight + 'px';
+          pullOutContainer.style.height = parent.document.documentElement.scrollHeight + 'px';
         }
       }, 50);
     });
@@ -211,6 +213,8 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       if (!isBasicData) {
         this.personalizedDataCopy = personalizedData;
         this.showInfoModal('Information', ['Personalized information saved']);
+      } else {
+        this.showInfoModal('Information', ['Clear Personalized information saved']);
       }
     });
   }
@@ -612,6 +616,11 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.selectedColumn = event.target.value;
   }
   ngOnDestroy() {
+    const iFrame: any = parent.document.querySelector('#right-content iframe');
+    if (iFrame) {
+      const pullout = parent.document.querySelector('#pulloutContainer');
+      pullout.remove();
+    }
     this.subscriptions$.next();
     this.subscriptions$.complete();
   }
@@ -810,10 +819,15 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     });
   }
   private onPageLoad() {
+    const iFrame: any = parent.document.querySelector('#right-content iframe');
+    if (iFrame) {
+      const pullout = '<div id=\'pulloutContainer\'><div class=\'pull-out-handle\'><div class=\'pull-out-handle-icon\'>+</div></div><div class=\'seperator\'></div><div class=\'pull-out-panel\'><div class=\'panel-data\'><div class=\'title\'>Actions</div><div class=\'description\'>Global Gateway℠ puts you in control of the data. Here are some tools to help you make the most of it.</div><div class=\'sub-title\'>Save Table Settings</div><div class=\'message\'>Save table settings for future use within the module</div><div class=\'settings-buttons\'><button class=\'pull-out-save-btn btn btn-primary l-btn mr-2\' type=\'button\'>Save</button><button class=\'pull-out-clear-btn btn btn-primary l-btn mr-2\' type=\'button\'>clear</button></div></div></div></div>'
+      $(parent.document.body).append(pullout);
+      this.addPulloutEvents();
+    }
     this.ngZone.runOutsideAngular(() => {
       // interval to change iframe height
       window.setInterval(() => {
-        const iFrame: any = parent.document.querySelector('#right-content iframe');
         const containerHeight = document.querySelector('#main-container').clientHeight;
         if (iFrame && containerHeight !== this.previousHeight) {
           this.previousHeight = containerHeight;
@@ -838,6 +852,36 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
       this.createModalBackDrop();
     });
+  }
+
+  private addPulloutEvents() {
+    const pullOutContainer: any = parent.document.querySelector('#pulloutContainer');
+    const handle = parent.document.querySelector('.pull-out-handle-icon');
+    const saveBtn = parent.document.querySelector('.pull-out-save-btn');
+    const clearBtn = parent.document.querySelector('.pull-out-clear-btn');
+    const panel = parent.document.querySelector('.pull-out-panel');
+    pullOutContainer.style.height = parent.document.documentElement.scrollHeight + 'px';
+    handle.addEventListener('click', () => {
+      showOrHidePanel(panel);
+    }, false);
+
+    saveBtn.addEventListener('click', () => {
+      showOrHidePanel(panel);
+      this.savePersonalizedData();
+    }, false);
+
+    clearBtn.addEventListener('click', () => {
+      showOrHidePanel(panel);
+      this.loadBasicPersonalizedData();
+    }, false);
+
+    function showOrHidePanel(panelContainer) {
+      if (panelContainer.classList.contains('show-panel')) {
+        panelContainer.classList.remove('show-panel');
+      } else {
+        panelContainer.classList.add('show-panel');
+      }
+    }
   }
 
   // Column Width Adjuster
