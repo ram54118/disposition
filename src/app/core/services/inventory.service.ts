@@ -54,7 +54,7 @@ export class InventoryService {
 
   public getAssetCredentials(): Observable<any> {
     const url = 'assets/json/mobileVariables.json';
-    // const url = 'api/ePlyMobile/fcsosb';
+    //const url = 'api/ePlyMobile/fcsosb'; 
     //const url = 'https://dev-globalgateway.amer.thermo.com/inventory-disposition/api/ePlyMobile/fcsosb';
     return this.serverProxyService.get(url).pipe(
       tap((response: any) => {

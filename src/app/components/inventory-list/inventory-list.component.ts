@@ -212,9 +212,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.InventoryHelperService.savePersonalizedData(personalizedData, this.queryParams).subscribe(res => {
       if (!isBasicData) {
         this.personalizedDataCopy = personalizedData;
-        this.showInfoModal('Information', ['Personalized information saved']);
+        this.showInfoModal('Information', ['Personalised information saved']);
       } else {
-        this.showInfoModal('Information', ['Clear Personalized information saved']);
+        this.showInfoModal('Information', ['Clear Personalised information saved']);
       }
     });
   }
@@ -616,11 +616,11 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     this.selectedColumn = event.target.value;
   }
   ngOnDestroy() {
-    const iFrame: any = parent.document.querySelector('#right-content iframe');
-    if (iFrame) {
-      const pullout = parent.document.querySelector('#pulloutContainer');
-      pullout.remove();
-    }
+    // const iFrame: any = parent.document.querySelector('#right-content iframe');
+    // if (iFrame) {
+    //   const pullout = parent.document.querySelector('#pulloutContainer');
+    //   pullout.remove();
+    // }
     this.subscriptions$.next();
     this.subscriptions$.complete();
   }
@@ -802,6 +802,11 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     const firstElement = element[0] as HTMLElement;
     if (element && firstElement) {
       firstElement.click();
+      const iFrame: any = parent.document.querySelector('#right-content iframe');
+      if (iFrame) {
+        const pullout = parent.document.querySelector('#pulloutContainer');
+        pullout.remove();
+      }
     }
   }
   private plsSaveYourChanges() {
@@ -818,6 +823,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       }, 300000);
     });
   }
+  //pullout
   private onPageLoad() {
     const iFrame: any = parent.document.querySelector('#right-content iframe');
     if (iFrame) {

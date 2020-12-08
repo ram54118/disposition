@@ -63,8 +63,8 @@
 
       <a class="action-link" (click)="reset()">Reset</a>
       <a class="action-link" (click)="showAll($event)">Show All</a>
-      <a class="action-link" (click)="savePersonalizedData()">Save Personalisation</a>
-      <a class="action-link" (click)="loadBasicPersonalizedData()">Clear Personalisation</a>
+      <a class="action-link" [hidden]="true" (click)="savePersonalizedData()">Save Personalisation</a>
+      <a class="action-link" [hidden]="true" (click)="loadBasicPersonalizedData()">Clear Personalisation</a>
     </div>
   </div>
   <ng-container *ngIf="!loadingInBackground">

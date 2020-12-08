@@ -385,3 +385,67 @@
  .checkbox-column {
    position: sticky !important;
  }
+
+ #pulloutContainer {
+  display: flex;
+  z-index: 999999;
+  position: absolute;
+  height: 100%;
+  right: 0;
+  top: 0;
+}
+
+#pulloutContainer .pull-out-handle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+#pulloutContainer .pull-out-handle .pull-out-handle-icon {
+  background-color: #f5b436;
+  border-radius: 4px 0 0 4px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #fff;
+  font-size: 12px;
+}
+
+#pulloutContainer .seperator {
+  width: 4px;
+  background-color: #f5b436;
+}
+
+#pulloutContainer .pull-out-panel {
+  background-color: #ecedeb;
+  width: 0;
+  height: 100%;
+  transition: width .35s ease-in-out;
+}
+
+#pulloutContainer .pull-out-panel.show-panel {
+  width: 470px;
+  padding: 2rem;
+}
+
+#pulloutContainer .pull-out-panel .title {
+  font-size: 3rem;
+  margin-top: 30px;
+}
+
+#pulloutContainer .pull-out-panel .description {
+  margin: 3rem 0;
+}
+
+#pulloutContainer .pull-out-panel .sub-title {
+  color: #1e8ae7;
+  font-size: 2rem;
+}
+
+#pulloutContainer .pull-out-panel .message {
+  color: #1e8ae7;
+  margin: 10px 0;
+}
