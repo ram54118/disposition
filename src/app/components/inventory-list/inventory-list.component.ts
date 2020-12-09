@@ -327,14 +327,15 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
 
   filterTableFromValue(value: string) {
     if (value) {
-      this.getFilterTableDataByType(this.selectedInventoryType);
+      this.getTableDataByType(this.selectedInventoryType);
       this.paginationRecords = this.paginationRecords.filter(inventory => {
         return String(inventory[this.selectedColumn]).toLowerCase().indexOf(value.toLowerCase()) >= 0;
       });
       this.inventoryList = this.paginationRecords.slice(0, this.recordsPerScreen);
       this.totalPaginationRecords = this.paginationRecords.length;
     } else {
-      this.showOnlyTableData(this.selectedInventoryType, false, true);
+      this.getTableDataByType(this.selectedInventoryType);
+      this.inventoryList = this.paginationRecords.slice(0, this.recordsPerScreen);
     }
     this.addLeftPsotionstoTable();
     this.calculatePaginatorPoints();
@@ -836,8 +837,10 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       window.setInterval(() => {
         const containerHeight = document.querySelector('#main-container').clientHeight;
         if (iFrame && containerHeight !== this.previousHeight) {
+          const pullOutContainer: any = parent.document.querySelector('#pulloutContainer');
           this.previousHeight = containerHeight;
           iFrame.style.height = containerHeight + mainDomOccupiedHeight + 'px';
+          pullOutContainer.style.height = parent.document.documentElement.scrollHeight + 'px';
         }
       }, 50);
 
@@ -866,26 +869,31 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     const saveBtn = parent.document.querySelector('.pull-out-save-btn');
     const clearBtn = parent.document.querySelector('.pull-out-clear-btn');
     const panel = parent.document.querySelector('.pull-out-panel');
+    const seperator = parent.document.querySelector('.seperator');
     pullOutContainer.style.height = parent.document.documentElement.scrollHeight + 'px';
     handle.addEventListener('click', () => {
-      showOrHidePanel(panel);
+      showOrHidePanel(panel, seperator, handle);
     }, false);
 
     saveBtn.addEventListener('click', () => {
-      showOrHidePanel(panel);
+      showOrHidePanel(panel, seperator, handle);
       this.savePersonalizedData();
     }, false);
 
     clearBtn.addEventListener('click', () => {
-      showOrHidePanel(panel);
+      showOrHidePanel(panel, seperator, handle);
       this.loadBasicPersonalizedData();
     }, false);
 
-    function showOrHidePanel(panelContainer) {
+    function showOrHidePanel(panelContainer, seperatorElem, handleElem) {
       if (panelContainer.classList.contains('show-panel')) {
         panelContainer.classList.remove('show-panel');
+        seperatorElem.classList.remove('show-seperator');
+        handleElem.innerText = "+";
       } else {
         panelContainer.classList.add('show-panel');
+        seperatorElem.classList.add('show-seperator');
+        handleElem.innerText = "x";
       }
     }
   }
