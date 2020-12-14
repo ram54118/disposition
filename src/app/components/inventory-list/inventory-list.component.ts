@@ -158,9 +158,11 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   loadBasicPersonalizedData() {
-    this.personalizedDataCopy = cloneDeep(this.basicPersonalizedDataCopy);
-    this.loadPersonalizedData(true);
-    this.savePersonalizedData(true);
+    this.ngZone.run(() => {
+      this.personalizedDataCopy = cloneDeep(this.basicPersonalizedDataCopy);
+      this.loadPersonalizedData(true);
+      this.savePersonalizedData(true);
+    });
   }
 
   loadPersonalizedData(fromReset?: boolean) {
