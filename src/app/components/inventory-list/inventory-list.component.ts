@@ -834,6 +834,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
             this.isModalOpenedForSomeTime = true;
           }, 120000);
           modal.content.onClose.subscribe(() => {
+            this.isModalOpenedForSomeTime = false;
             this.plsSaveYourChanges();
           });
         }
