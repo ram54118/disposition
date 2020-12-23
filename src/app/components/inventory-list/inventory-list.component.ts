@@ -79,6 +79,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
   bgColorWidth = 0;
   personalizedDataCopy;
   basicPersonalizedDataCopy;
+  private isModalOpenedForSomeTime;
   @ViewChild('searchFilter', { static: false }) searchFilter;
   @ViewChild('inventoryTable', { static: false }) public inventoryTable: any;
   constructor(private ngZone: NgZone, private inventoryService: InventoryService,
@@ -827,7 +828,11 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       // interval to show modal for every 2mins
       window.setTimeout(() => {
         if (!this.isModalOpen) {
+          this.isModalOpenedForSomeTime = false;
           const modal = this.showInfoModal('Please save your changes.', '');
+          window.setTimeout(() => {
+            this.isModalOpenedForSomeTime = true;
+          }, 120000);
           modal.content.onClose.subscribe(() => {
             this.plsSaveYourChanges();
           });
@@ -861,7 +866,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         const backToREportElem = parent.document.getElementsByClassName('sessionButton');
         if (backToREportElem && backToREportElem[0]) {
           const elem = backToREportElem[0] as HTMLElement;
-          elem.click();
+          if (!this.isModalOpen || this.isModalOpenedForSomeTime){
+            elem.click();
+          }
         }
       }, 60000);
 
