@@ -188,7 +188,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
         this.moveColumns();
       });
     } else {
-      this.filterOptions = this.columnsList.filter(col => col.label && col.label !== 'Action').map(col => ({ label: col.label, value: col.value }));
+      this.filterOptions = this.basicPersonalizedDataCopy.columnsList.filter(col => col.label && col.label !== 'Action').map(col => ({ label: col.label, value: col.value }));
     }
   }
 
@@ -312,6 +312,9 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       });
     }
     this.inventoryList = this.paginationRecords.slice(0, this.recordsPerScreen);
+    if (!this.selectAll) {
+      this.selectAll = this.inventoryList.every(inv => inv.isSelect !== undefined && inv.isSelect === true);
+    }
     this.addLeftPsotionstoTable();
     this.calculatePaginatorPoints();
   }
@@ -338,6 +341,7 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
     } else {
       this.getTableDataByType(this.selectedInventoryType);
       this.inventoryList = this.paginationRecords.slice(0, this.recordsPerScreen);
+      this.totalPaginationRecords = this.paginationRecords.length;
     }
     this.addLeftPsotionstoTable();
     this.calculatePaginatorPoints();
@@ -564,8 +568,14 @@ export class InventoryListComponent implements OnInit, AfterViewInit, OnDestroy 
       this.currentPage = 1;
       this.selectedInventoryList = [];
     } else {
-      this.inventoryList = cloneDeep(this.paginationRecords.slice((this.goToPage - 1) * this.recordsPerScreen,
-        this.goToPage * this.recordsPerScreen));
+      const records = this.paginationRecords.slice((this.goToPage - 1) * this.recordsPerScreen,
+        this.goToPage * this.recordsPerScreen);
+      if (this.paginationRecords && this.paginationRecords.length && records.length === 0) {
+        this.inventoryList = cloneDeep(this.paginationRecords.slice((this.goToPage - 2) * this.recordsPerScreen,
+          (this.goToPage - 1) * this.recordsPerScreen));
+      } else {
+        this.inventoryList = cloneDeep(records);
+      }
     }
   }
 
